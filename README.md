@@ -1,5 +1,5 @@
-# conan-template-setup
-Template c++ project with conan setup
+# Intersection of 2 triangles
+Hse project
 
 # How to setup and run
 1. Install conan 2.0
@@ -11,5 +11,3 @@ Template c++ project with conan setup
 6. `cmake .. -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release`
 7. `cmake --build .`
 8. `./conan_template`
-
-Now make a tea and eat some cookies. You're awesome.
