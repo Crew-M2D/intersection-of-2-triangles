@@ -6,7 +6,7 @@ Hse project
 2. [Optional] Create conan profile if you haven't yet: `conan profile detect --force`. This will create new default profile for conan in your system.
 3. Install CMake of version not less than the one that is specified in CMakeLists.txt
 3. `cd` to the root folder of the project
-4. `conan install . --output-folder=build --build=missing`
+4. `conan install . --output-folder=build --build=missing -c tools.system.package_manager:mode=install`
 5. `cd build`
 6. `cmake .. -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release`
 7. `cmake --build .`
