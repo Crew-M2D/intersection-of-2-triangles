@@ -15,10 +15,10 @@ int main() {
     // g.run();
     // как сделаю графику все поправлю и все сделаю
 
-    InputComponent input;
-    input.on_input_process();
+    InputComponent input_output;
+    input_output.on_input_process();
     MathComponent math;
-    math.on_render();
-    input.on_render();
+    math.on_update();
+    input_output.on_render();
     return 0;
 }
