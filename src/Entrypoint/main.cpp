@@ -1,11 +1,11 @@
-#include <fmt/core.h>
+#include <iostream>
 #include <Application.hpp>
 #include <GraphicsComponent.hpp>
 #include <InputComponent.hpp>
 #include <MathComponent.hpp>
 
 int main() {
-  fmt::print("The answer is: {}\n", 42);
+  std::cout << "Entrypoint run" << std::endl;
   Application app;
   app.run();
   MathComponent m;

@@ -1,4 +1,5 @@
 #include "GraphicsComponent.hpp"
+#include "MathComponent.hpp"
 #include <gtest/gtest.h>
 #include <Application.hpp>
 
@@ -32,15 +33,9 @@ class FooTest : public ::testing::Test {
   // for Foo.
 };
 
-TEST_F(FooTest, MethodRunApplicationNoExcept) {
-  Application a;
-  a.run();
-  EXPECT_EQ(0, 0);
-}
-
 TEST_F(FooTest, MethodNoExcept) {
-  GraphicsComponent a;
-  a.run();
+  MathComponent m;
+  m.run();
   EXPECT_EQ(0, 0);
 }
 

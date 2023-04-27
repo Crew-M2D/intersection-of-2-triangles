@@ -1,4 +1,5 @@
 #include "InputComponent.hpp"
-#include <fmt/core.h>
 
-void InputComponent::run() { fmt::print("input run"); }
+#include <iostream>
+
+void InputComponent::run() { std::cout << "input run" << std::endl; }

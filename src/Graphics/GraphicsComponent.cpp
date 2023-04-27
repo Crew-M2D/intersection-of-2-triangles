@@ -1,14 +1,11 @@
 #include "GraphicsComponent.hpp"
-#include <fmt/core.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <unistd.h>
 #include <imgui.h>
-#include <3dParty/imgui_impl_glfw.h>
-#include <3dParty/imgui_impl_opengl3.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
 
-// #include "imgui_impl_opengl3.h"
-#include <stdio.h>
+#include <iostream>
 
 // Include glfw3.h after our OpenGL definitions
 #include <GLFW/glfw3.h>
@@ -20,7 +17,7 @@ static void glfw_error_callback(int error, const char* description)
 }
 
 void GraphicsComponent::run() { 
-    fmt::print("haha");
+  std::cout << "graphics run" << std::endl;
 
  glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit())
