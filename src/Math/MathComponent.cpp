@@ -2,6 +2,23 @@
 #include<vector>
 #include <iostream>
 
+double cross_product(Point2f a, Point2f b, Point2f c) {
+	double ax = b.x - a.x;
+	double ay = b.y - a.y;
+	double bx = c.x - a.x;
+	double by = c.y - a.y;
+	return ax * by - ay * bx;
+}
+
+bool point_inside_triangle(Point2f a, Point2f b, Point2f c, Point2f p) {
+	double cp1 = cross_product(a, b, p);
+	double cp2 = cross_product(b, c, p);
+	double cp3 = cross_product(c, a, p);
+	if ((cp1 > 0 && cp2 > 0 && cp3 > 0) || (cp1 < 0 && cp2 < 0 && cp3 < 0)) {
+		return true;
+	}
+	return false;
+}
 auto MathComponent::calculate_intersection(Triangle triangle_1,
                                            Triangle triangle_2)
     -> Intersection {
