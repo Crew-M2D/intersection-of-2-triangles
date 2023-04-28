@@ -6,10 +6,10 @@
 
 double cross_product(Point2f point_1, Point2f point_2, Point2f point_3) {
 	double point_1_x = point_2.x - point_1.x;
-	double point_1y = point_2.y - point_1.y;
-	double point_2x = point_3.x - point_1.x;
-	double point_2y = point_3.y - point_1.y;
-	return point_1_x * point_2y - point_1y * point_2x;
+	double point_1_y = point_2.y - point_1.y;
+	double point_2_x = point_3.x - point_1.x;
+	double point_2_y = point_3.y - point_1.y;
+	return point_1_x * point_2_y - point_1_y * point_2_x;
 }
 // Функция для проверки принадлежности точки треугольнику
 bool point_inside_triangle(Point2f triangle_point_1, Point2f triangle_point_2, Point2f triangle_point_3, Point2f point_to_check) {
