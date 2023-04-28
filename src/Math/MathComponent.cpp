@@ -28,31 +28,31 @@ auto MathComponent::calculate_intersection(Triangle triangle_1,
 	std::vector<Point2f> Intersection_points;
 	for (int i = 0;i < 2;++i)
 	{
-    		for (int j = 0;j < 2;++j)
+    	for (int j = 0;j < 2;++j)
 		{		
 			bool indicator = true;
-			float x1 = triangle_1[i].x;
-			float y1 = triangle_1[i].y;
-			float x2 = triangle_1[(i+1)%3].x;
-			float y2 = triangle_1[(i+1)%3].y;
-			float x3 = triangle_2[j].x;
-			float y3 = triangle_2[j].y;
-			float x4 = triangle_2[(j + 1) % 3].x;
-			float y4 = triangle_2[(j + 1) % 3].y;
-			if ((x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4) != 0)
+			float first_point_x_1 = triangle_1[i].x;
+			float first_point_y_1 = triangle_1[i].y;
+			float second_point_x_1 = triangle_1[(i+1)%3].x;
+			float second_point_y_2 = triangle_1[(i+1)%3].y;
+			float first_point_x_2 = triangle_2[j].x;
+			float first_point_y_3 = triangle_2[j].y;
+			float second_point_x_2 = triangle_2[(j + 1) % 3].x;
+			float second_point_y_2 = triangle_2[(j + 1) % 3].y;
+			if ((first_point_x_1 - second_point_x_1) * (first_point_y_3 - second_point_y_2) - (first_point_y_1 - second_point_y_2) * (first_point_x_2 - second_point_x_2) != 0)
 			{
-				float new_x = ((x1 * y2 - y1 * x2) * (x3 - x4) - (x1 - x2) * (x3 * y4 - y3 * x4)) / ((x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4));
-				float new_y = ((x1 * y2 - y1 * x2) * (y3 - y4) - (y1 - y2) * (x3 * y4 - y3 * x4)) / ((x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4));
-				if (!(std::min(x1, x2) <= new_x <= std::max(x1, x2)))
+				float new_x = ((first_point_x_1 * second_point_y_2 - first_point_y_1 * second_point_x_1) * (first_point_x_2 - second_point_x_2) - (first_point_x_1 - second_point_x_1) * (first_point_x_2 * second_point_y_2 - first_point_y_3 * second_point_x_2)) / ((first_point_x_1 - second_point_x_1) * (first_point_y_3 - second_point_y_2) - (first_point_y_1 - second_point_y_2) * (first_point_x_2 - second_point_x_2));
+				float new_y = ((first_point_x_1 * second_point_y_2 - first_point_y_1 * second_point_x_1) * (first_point_y_3 - second_point_y_2) - (first_point_y_1 - second_point_y_2) * (first_point_x_2 * second_point_y_2 - first_point_y_3 * second_point_x_2)) / ((first_point_x_1 - second_point_x_1) * (first_point_y_3 - second_point_y_2) - (first_point_y_1 - second_point_y_2) * (first_point_x_2 - second_point_x_2));
+				if (!(std::min(first_point_x_1, second_point_x_1) <= new_x <= std::max(first_point_x_1, second_point_x_1)))
 				{
 					indicator = false;
-				}else if (!(std::min(y1, y2) <= new_y <= std::max(y1, y2)))
+				}else if (!(std::min(first_point_y_1, second_point_y_2) <= new_y <= std::max(first_point_y_1, second_point_y_2)))
 				{
 					indicator = false;
-				}else if (!(std::min(x3, x3) <= new_x <= std::max(x3, x4)))
+				}else if (!(std::min(first_point_x_2, first_point_x_2) <= new_x <= std::max(first_point_x_2, second_point_x_2)))
 				{
 					indicator = false;
-				}else if (!(std::min(y3, y4) <= new_y <= std::max(y3, y4)))
+				}else if (!(std::min(first_point_y_3, second_point_y_2) <= new_y <= std::max(first_point_y_3, second_point_y_2)))
 				{
 					indicator = false;
 				}
@@ -84,12 +84,11 @@ auto MathComponent::calculate_intersection(Triangle triangle_1,
 }
 
 auto MathComponent::calculate_ratio(Triangle triangle_1, Triangle triangle_2)
-    -> float 
-{
-    	float max_x = std::max({std::abs(triangle_1[0].x), std::abs(triangle_1[1].x),std::abs(triangle_1[2].x), std::abs(triangle_2[2].x),std::abs(triangle_1[0].x), std::abs(triangle_1[1].x)});
+    -> float {
+    float max_x = std::max({std::abs(triangle_1[0].x), std::abs(triangle_1[1].x),std::abs(triangle_1[2].x), std::abs(triangle_2[2].x),std::abs(triangle_1[0].x), std::abs(triangle_1[1].x)});
 	float max_y = std::max({std::abs(triangle_1[0].y), std::abs(triangle_1[1].y),std::abs(triangle_1[2].y), std::abs(triangle_2[2].y),std::abs(triangle_1[0].y), std::abs(triangle_1[1].y)});
 	float ratio = 400/std::max(max_y, max_x);
-    	return ratio; 
+    return ratio; 
 }
 
 
