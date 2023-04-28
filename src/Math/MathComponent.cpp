@@ -1,31 +1,34 @@
 #include "MathComponent.hpp"
 #include<vector>
 #include<stdio.h>
+#include <algorithm>
 #include <iostream>
 
-double cross_product(Point2f a, Point2f b, Point2f c) {
-	double ax = b.x - a.x;
-	double ay = b.y - a.y;
-	double bx = c.x - a.x;
-	double by = c.y - a.y;
-	return ax * by - ay * bx;
+double cross_product(Point2f point_1, Point2f point_2, Point2f point_3) {
+	double point_1_x = point_2.x - point_1.x;
+	double point_1y = point_2.y - point_1.y;
+	double point_2x = point_3.x - point_1.x;
+	double point_2y = point_3.y - point_1.y;
+	return point_1_x * point_2y - point_1y * point_2x;
 }
 // Функция для проверки принадлежности точки треугольнику
-bool point_inside_triangle(Point2f a, Point2f b, Point2f c, Point2f p) {
-	double cp1 = cross_product(a, b, p);
-	double cp2 = cross_product(b, c, p);
-	double cp3 = cross_product(c, a, p);
-	if ((cp1 > 0 && cp2 > 0 && cp3 > 0) || (cp1 < 0 && cp2 < 0 && cp3 < 0)) {
+bool point_inside_triangle(Point2f triangle_point_1, Point2f triangle_point_2, Point2f triangle_point_3, Point2f point_to_check) {
+	double cross_area_1 = cross_product(triangle_point_1, triangle_point_2, point_to_check);
+	double cross_area_2 = cross_product(triangle_point_2, triangle_point_3, point_to_check);
+	double cross_area_3 = cross_product(triangle_point_3, triangle_point_1, point_to_check);
+	if ((cross_area_1 > 0 && cross_area_2 > 0 && cross_area_3 > 0) || (cross_area_1 < 0 && cross_area_2 < 0 && cross_area_3 < 0)) {
 		return true;
 	}
 	return false;
 }
 auto MathComponent::calculate_intersection(Triangle triangle_1,
                                            Triangle triangle_2)
-    -> Intersection {
+->Intersection
+{
+	std::vector<Point2f> Intersection_points;
 	for (int i = 0;i < 2;++i)
 	{
-    for (int j = 0;j < 2;++j)
+    		for (int j = 0;j < 2;++j)
 		{		
 			bool indicator = true;
 			float x1 = triangle_1[i].x;
@@ -40,19 +43,16 @@ auto MathComponent::calculate_intersection(Triangle triangle_1,
 			{
 				float new_x = ((x1 * y2 - y1 * x2) * (x3 - x4) - (x1 - x2) * (x3 * y4 - y3 * x4)) / ((x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4));
 				float new_y = ((x1 * y2 - y1 * x2) * (y3 - y4) - (y1 - y2) * (x3 * y4 - y3 * x4)) / ((x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4));
-				if (!(min(x1, x2) <= new_x <= max(x1, x2)))
+				if (!(std::min(x1, x2) <= new_x <= std::max(x1, x2)))
 				{
 					indicator = false;
-				}
-				if (!(min(y1, y2) <= new_y <= max(y1, y2)))
+				}else if (!(std::min(y1, y2) <= new_y <= std::max(y1, y2)))
 				{
 					indicator = false;
-				}
-				if (!(min(x3, x3) <= new_x <= max(x3, x4)))
+				}else if (!(std::min(x3, x3) <= new_x <= std::max(x3, x4)))
 				{
 					indicator = false;
-				}
-				if (!(min(y3, y4) <= new_y <= max(y3, y4)))
+				}else if (!(std::min(y3, y4) <= new_y <= std::max(y3, y4)))
 				{
 					indicator = false;
 				}
@@ -61,7 +61,7 @@ auto MathComponent::calculate_intersection(Triangle triangle_1,
 					Point2f new_point;
 					new_point.x = new_x;
 					new_point.y = new_y;
-					Intersection.push_back(new_point);
+					Intersection_points.push_back(new_point);
 				}
 			}
 		}
@@ -70,39 +70,26 @@ auto MathComponent::calculate_intersection(Triangle triangle_1,
 	{
 		if (point_inside_triangle(triangle_2[0], triangle_2[1], triangle_2[2], triangle_1[i]))
 		{
-			Intersection.push_back(triangle_1[i]);
+			Intersection_points.push_back(triangle_1[i]);
 		}
 	}
 	for (int i = 0; i < 3;++i)
 	{
 		if (point_inside_triangle(triangle_1[0], triangle_1[1], triangle_1[2], triangle_2[i]))
 		{
-			Intersection.push_back(triangle_2[i]);
+			Intersection_points.push_back(triangle_2[i]);
 		}
 	}
-    (void)triangle_1;
-    (void)triangle_2;
-
-    return {};
+    return {Intersection_points};
 }
 
 auto MathComponent::calculate_ratio(Triangle triangle_1, Triangle triangle_2)
-    -> float {
-    float max_x = max(abs(triangle_1[0].x), abs(triangle_1[1].x));
-	max_x = max(max_x, abs(triangle_1[2].x));
-	max_x = max(max_x, abs(triangle_2[0].x));
-	max_x = max(max_x, abs(triangle_2[1].x));
-	max_x = max(max_x, abs(triangle_2[2].x));
-	float max_y = max(abs(triangle_1[0].y), abs(triangle_1[1].y));
-	max_y = max(max_y, abs(triangle_1[2].y));
-	max_y = max(max_y, abs(triangle_2[0].y));
-	max_y = max(max_y, abs(triangle_2[1].y));
-	max_y = max(max_y, abs(triangle_2[2].y));
-	float kaef = 400/max(max_y, max_x);
-    
-    (void)triangle_1;
-    (void)triangle_2;
-    return kaef; 
+    -> float 
+{
+    	float max_x = std::max({std::abs(triangle_1[0].x), std::abs(triangle_1[1].x),std::abs(triangle_1[2].x), std::abs(triangle_2[2].x),std::abs(triangle_1[0].x), std::abs(triangle_1[1].x)});
+	float max_y = std::max({std::abs(triangle_1[0].y), std::abs(triangle_1[1].y),std::abs(triangle_1[2].y), std::abs(triangle_2[2].y),std::abs(triangle_1[0].y), std::abs(triangle_1[1].y)});
+	float ratio = 400/std::max(max_y, max_x);
+    	return ratio; 
 }
 
 
