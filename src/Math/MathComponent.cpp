@@ -38,52 +38,31 @@ auto MathComponent::calculate_intersection(Triangle triangle_1,
             float first_point_x_1 = triangle_1[i].x;
             float first_point_y_1 = triangle_1[i].y;
             float second_point_x_1 = triangle_1[(i + 1) % 3].x;
-            float second_point_y_2 = triangle_1[(i + 1) % 3].y;
+            float second_point_y_1 = triangle_1[(i + 1) % 3].y;
             float first_point_x_2 = triangle_2[j].x;
             float first_point_y_2 = triangle_2[j].y;
             float second_point_x_2 = triangle_2[(j + 1) % 3].x;
             float second_point_y_2 = triangle_2[(j + 1) % 3].y;
-            if ((first_point_x_1 - second_point_x_1) *
-                        (first_point_y_2 - second_point_y_2) -
-                    (first_point_y_1 - second_point_y_2) *
-                        (first_point_x_2 - second_point_x_2) !=
-                0) {
-                float new_x = ((first_point_x_1 * second_point_y_2 -
-                                first_point_y_1 * second_point_x_1) *
-                                   (first_point_x_2 - second_point_x_2) -
-                               (first_point_x_1 - second_point_x_1) *
-                                   (first_point_x_2 * second_point_y_2 -
-                                    first_point_y_2 * second_point_x_2)) /
-                              ((first_point_x_1 - second_point_x_1) *
-                                   (first_point_y_2 - second_point_y_2) -
-                               (first_point_y_1 - second_point_y_2) *
-                                   (first_point_x_2 - second_point_x_2));
-                float new_y = ((first_point_x_1 * second_point_y_2 -
-                                first_point_y_1 * second_point_x_1) *
-                                   (first_point_y_2 - second_point_y_2) -
-                               (first_point_y_1 - second_point_y_2) *
-                                   (first_point_x_2 * second_point_y_2 -
-                                    first_point_y_2 * second_point_x_2)) /
-                              ((first_point_x_1 - second_point_x_1) *
-                                   (first_point_y_2 - second_point_y_2) -
-                               (first_point_y_1 - second_point_y_2) *
-                                   (first_point_x_2 - second_point_x_2));
-                if (!(std::min(first_point_x_1, second_point_x_1) <= new_x <=
-                      std::max(first_point_x_1, second_point_x_1))) {
-                    indicator = false;
-                } else if (!(std::min(first_point_y_1, second_point_y_2) <=
-                             new_y <=
-                             std::max(first_point_y_1, second_point_y_2))) {
-                    indicator = false;
-                } else if (!(std::min(first_point_x_2, first_point_x_2) <=
-                             new_x <=
-                             std::max(first_point_x_2, second_point_x_2))) {
-                    indicator = false;
-                } else if (!(std::min(first_point_y_2, second_point_y_2) <=
-                             new_y <=
-                             std::max(first_point_y_2, second_point_y_2))) {
-                    indicator = false;
-                }
+            if ((first_point_x_1 - second_point_x_1) * (first_point_y_2 - second_point_y_2) - (first_point_y_1 - second_point_y_1) * (first_point_x_2 - second_point_x_2) != 0)
+			{
+				float new_x = ((first_point_x_1 * second_point_y_1 - first_point_y_1 * second_point_x_1) * (first_point_x_2 - second_point_x_2) - (first_point_x_1 - second_point_x_1) * (first_point_x_2 * second_point_y_2 - first_point_y_2 * second_point_x_2)) / ((first_point_x_1 - second_point_x_1) * (first_point_y_2 - second_point_y_2) - (first_point_y_1 - second_point_y_1) * (first_point_x_2 - second_point_x_2));
+				float new_y = ((first_point_x_1 * second_point_y_1 - first_point_y_1 * second_point_x_1) * (first_point_y_2 - second_point_y_2) - (first_point_y_1 - second_point_y_1) * (first_point_x_2 * second_point_y_2 - first_point_y_2 * second_point_x_2)) / ((first_point_x_1 - second_point_x_1) * (first_point_y_2 - second_point_y_2) - (first_point_y_1 - second_point_y_1) * (first_point_x_2 - second_point_x_2));
+				if (!(std::min(first_point_x_1, second_point_x_1) <= new_x <= std::max(first_point_x_1, second_point_x_1)))
+				{
+					indicator = false;
+				}
+				else if (!(std::min(first_point_y_1, second_point_y_1) <= new_y <= std::max(first_point_y_1, second_point_y_1)))
+				{
+					indicator = false;
+				}
+				else if (!(std::min(first_point_x_2, first_point_x_2) <= new_x <= std::max(first_point_x_2, second_point_x_2)))
+				{
+					indicator = false;
+				}
+				else if (!(std::min(first_point_y_2, second_point_y_2) <= new_y <= std::max(first_point_y_2, second_point_y_2)))
+				{
+					indicator = false;
+				}
                 if (indicator) {
                     Point2f new_point;
                     new_point.x = new_x;
@@ -103,6 +82,13 @@ auto MathComponent::calculate_intersection(Triangle triangle_1,
         if (point_inside_triangle(triangle_1[0], triangle_1[1], triangle_1[2],
                                   triangle_2[i])) {
             Intersection_points.push_back(triangle_2[i]);
+        }
+    }
+    for (int i = 1; i < Intersection_points.size(); ++i)
+    {
+        if(Intersection_points[i-1].x > Intersection_points[i-1].x)
+        {
+           std::swap(Intersection_points[i-1],Intersection_points[i]); 
         }
     }
     return {Intersection_points};
