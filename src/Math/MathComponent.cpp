@@ -32,8 +32,8 @@ auto MathComponent::calculate_intersection(Triangle triangle_1,
                                            Triangle triangle_2)
     -> Intersection {
     Intersection Intersection_points;
-    for (int i = 0; i < 2; ++i) {
-        for (int j = 0; j < 2; ++j) {
+    for (int i = 0; i <= 2; ++i) {
+        for (int j = 0; j <= 2; ++j) {
             bool indicator = true;
             float first_point_x_1 = triangle_1[i].x;
             float first_point_y_1 = triangle_1[i].y;
