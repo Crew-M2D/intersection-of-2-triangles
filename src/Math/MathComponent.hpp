@@ -24,4 +24,6 @@ public:
     void on_input_process() override {}
 
     void on_register() override {}
+
+    void on_finish() override {}
 };
