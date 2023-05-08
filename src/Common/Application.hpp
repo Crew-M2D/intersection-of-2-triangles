@@ -1,7 +1,10 @@
 #pragma once
 
+#include <GLFW/glfw3.h>
+
 #include <array>
 #include <vector>
+
 
 struct Point2f {
     float x;
@@ -11,6 +14,8 @@ struct Point2f {
 
     Point2f(float x_value, float y_value);
 };
+
+
 
 using Point = Point2f;
 using Triangle = std::array<Point, 3>;
@@ -30,13 +35,19 @@ public:
     auto get_ratio() -> float;
     void set_ratio(float ratio_value);
 
+    auto get_window() -> GLFWwindow*;
+    void set_window(GLFWwindow* window);
+
 private:
-    Triangle triangle_1;
-    Triangle triangle_2;
+    Triangle triangle_1 = {Point(-5.F, 0.F), Point(0.F, 5.F), Point(5.F, 0.F)};
+    Triangle triangle_2 = {Point(0.F, 0.F), Point(0.F, 5.F), Point(5.F, 0.F)};
 
     Intersection intersection;
 
     float ratio = 1.0F;
+
+    GLFWwindow* window;
+
 };
 
 extern GlobalStorage global_storage;
@@ -47,6 +58,7 @@ public:
     virtual void on_render() = 0;
     virtual void on_input_process() = 0;
     virtual void on_register() = 0;
+    virtual void on_finish() = 0;
 };
 
 class Application {
@@ -65,4 +77,6 @@ private:
     void update();
 
     void render();
+
+    void finish();
 };

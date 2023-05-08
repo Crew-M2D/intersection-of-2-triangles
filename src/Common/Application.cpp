@@ -31,6 +31,10 @@ auto GlobalStorage::get_ratio() -> float { return ratio; }
 
 void GlobalStorage::set_ratio(float ratio_value) { ratio = ratio_value; }
 
+void GlobalStorage::set_window(GLFWwindow* g_window) { window = g_window; }
+
+auto GlobalStorage::get_window() -> GLFWwindow* { return window; }
+
 void Application::register_component(IComponent&& component) {
     component.on_register();
     components.push_back(&component);
@@ -42,9 +46,12 @@ void Application::run() {
         update();
         render();
     }
+    finish();
 }
 
-auto Application::is_running() -> bool { return true; }
+auto Application::is_running() -> bool {
+    return glfwWindowShouldClose(global_storage.get_window()) == 0;
+}
 
 void Application::process_input() {
     for (auto& component : components) {
@@ -61,5 +68,11 @@ void Application::update() {
 void Application::render() {
     for (auto& component : components) {
         component->on_render();
+    }
+}
+
+void Application::finish() {
+    for (auto& component : components) {
+        component->on_finish();
     }
 }

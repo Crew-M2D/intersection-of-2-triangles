@@ -12,7 +12,7 @@ Triangle get_triangle_values(unsigned int number) {
     std::cout
         << "The x coordinate is in the first place, and the y is in the second"
         << std::endl;
-    Triangle new_triangle = {Point{0.F, 0.F}, Point{0.F, 0.F}, Point{0.F, 0.F}};
+    Triangle new_triangle;
 
     for (unsigned long long i = 0; i < 3; i++) {
         std::cin >> new_triangle[i].x >> new_triangle[i].y;
@@ -39,7 +39,7 @@ void InputComponent::on_render() {
     } else {
         std::cout << "The following intersection points were obtained"
                   << std::endl;
-        for (unsigned long long i = 0; intersection.size(); i++) {
+        for (unsigned long long i = 0; i < intersection.size(); i++) {
             std::cout << "(" << intersection[i].x << ", " << intersection[i].y
                       << ")" << std::endl;
         }
