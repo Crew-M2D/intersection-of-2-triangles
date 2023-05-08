@@ -11,12 +11,13 @@
 
 class MathComponent : public IComponent {
 private:
-    auto calculate_intersection(Triangle triangle_1, Triangle triangle_2)
-        -> Intersection;
-
     auto calculate_ratio(Triangle triangle_1, Triangle triangle_2) -> float;
 
 public:
+
+    auto calculate_intersection(Triangle triangle_1, Triangle triangle_2)
+        -> Intersection;
+
     void on_update() override;
 
     void on_render() override {}
@@ -26,4 +27,6 @@ public:
     void on_register() override {}
 
     void on_finish() override {}
+
+    virtual ~MathComponent() {}
 };

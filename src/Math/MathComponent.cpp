@@ -152,8 +152,6 @@ auto MathComponent::calculate_intersection(Triangle triangle_1,
                 if (indicator) {
                     if (!point_already_recorded(intersection_points,
                                                 new_intersection_point)) {
-                        std::cout << new_intersection_point.x << " "
-                                  << new_intersection_point.y << std::endl;
                         intersection_points.push_back(new_intersection_point);
                     }
                 }
@@ -172,8 +170,6 @@ auto MathComponent::calculate_intersection(Triangle triangle_1,
     for (unsigned long long i = 0; i < 3; i++) {
         if (point_inside_triangle(triangle_1, triangle_2[i])) {
             if (!point_already_recorded(intersection_points, triangle_2[i])) {
-                std::cout << triangle_2[i].x << " " << triangle_2[i].y
-                          << std::endl;
                 intersection_points.push_back(triangle_2[i]);
             }
         }
