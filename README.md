@@ -47,7 +47,7 @@ To run program:
 
 To run tests:
 ```bash
-cd tests
+cd build/tests
 ctest
 ```
 
