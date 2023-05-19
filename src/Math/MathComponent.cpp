@@ -193,15 +193,12 @@ auto MathComponent::calculate_intersection(Triangle triangle_1,
 
 auto MathComponent::calculate_ratio(Triangle triangle_1, Triangle triangle_2)
     -> float {
-    float max_x =
-        std::max({std::abs(triangle_1[0].x), std::abs(triangle_1[1].x),
-                  std::abs(triangle_1[2].x), std::abs(triangle_2[2].x),
-                  std::abs(triangle_1[0].x), std::abs(triangle_1[1].x)});
-    float max_y =
-        std::max({std::abs(triangle_1[0].y), std::abs(triangle_1[1].y),
-                  std::abs(triangle_1[2].y), std::abs(triangle_2[2].y),
-                  std::abs(triangle_1[0].y), std::abs(triangle_1[1].y)});
-    float ratio = 400 / std::max(max_y, max_x);
+    // вычисление максимальных и минимальных x и y
+    float max_x = get_max_x(triangle_1, triangle_2);
+    float min_x = get_min_x(triangle_1, triangle_2);
+    float max_y = get_max_y(triangle_1, triangle_2);
+    float min_y = get_min_y(triangle_1, triangle_2);
+    float ratio = 2.0F / (std::max(max_y, max_x) - std::min(min_y, min_x));
     return ratio;
 }
 
