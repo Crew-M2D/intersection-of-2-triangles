@@ -6,7 +6,6 @@
 #include "GraphicsComponent.hpp"
 #include "MathComponent.hpp"
 
-
 using namespace std;
 
 struct MathComponentTest {
@@ -56,9 +55,8 @@ TEST(MathComponentTest, NoIntersection_1) {
     Triangle trian1{Point2f(1, 7), Point2f(2, 2), Point2f(8, 1)};
     Triangle trian2{Point2f(4, 9), Point2f(5, 4), Point2f(7, 11)};
     Intersection intersection = result.calculate_intersection(trian1, trian2);
-    vector<float> answer = {};
 
-    EXPECT_EQ(answer.size(), 0);
+    EXPECT_EQ(intersection.size(), 0);
 }
 
 TEST(MathComponentTest, NoIntersection_2) {
@@ -66,9 +64,8 @@ TEST(MathComponentTest, NoIntersection_2) {
     Triangle trian1{Point2f(1, 1), Point2f(1, 5), Point2f(5, 10)};
     Triangle trian2{Point2f(2, 1), Point2f(7, 1), Point2f(6, 12)};
     Intersection intersection = result.calculate_intersection(trian1, trian2);
-    vector<float> answer = {};
 
-    EXPECT_EQ(answer.size(), 0);
+    EXPECT_EQ(intersection.size(), 0);
 }
 
 TEST(MathComponentTest, NoIntersection_3) {
@@ -76,9 +73,8 @@ TEST(MathComponentTest, NoIntersection_3) {
     Triangle trian1{Point2f(-5, 1), Point2f(-2, -7), Point2f(3, -2)};
     Triangle trian2{Point2f(-4, 3), Point2f(3, 6), Point2f(6, -2)};
     Intersection intersection = result.calculate_intersection(trian1, trian2);
-    vector<float> answer = {};
 
-    EXPECT_EQ(answer.size(), 0);
+    EXPECT_EQ(intersection.size(), 0);
 }
 
 TEST(MathComponentTest, NoIntersection_4) {
@@ -86,9 +82,8 @@ TEST(MathComponentTest, NoIntersection_4) {
     Triangle trian1{Point2f(-8, -1), Point2f(-7, -5), Point2f(-2, -1)};
     Triangle trian2{Point2f(-4, 2), Point2f(-1, 6), Point2f(1, -2)};
     Intersection intersection = result.calculate_intersection(trian1, trian2);
-    vector<float> answer = {};
 
-    EXPECT_EQ(answer.size(), 0);
+    EXPECT_EQ(intersection.size(), 0);
 }
 
 // One
@@ -388,6 +383,130 @@ TEST(MathComponentTest, ThreePoints_9) {
     }
 }
 
+TEST(MathComponentTest, ThreePoints_10) {
+    MathComponent result;
+    Triangle trian1{Point2f(-6, -2), Point2f(-2, -3), Point2f(2, 3)};
+    Triangle trian2{Point2f(-5, 4), Point2f(-3, -2), Point2f(1, 5)};
+    Intersection intersection = result.calculate_intersection(trian1, trian2);
+    vector answer = {Findpoint(Equation(Point2f(-5, 4), Point2f(-3, 2)),
+                               Equation(Point2f(-6, -2), Point2f(2, 3))),
+                     Point2f(-3, -2),
+                     Findpoint(Equation(Point2f(-3, -2), Point2f(1, 5)),
+                               Equation(Point2f(-6, -2), Point2f(2, 3)))};
+
+    if (intersection.size() == answer.size()) {
+        for (unsigned long long i = 0; i < intersection.size(); i++) {
+            EXPECT_EQ(intersection[i].x, answer[i].x);
+            EXPECT_EQ(intersection[i].y, answer[i].y);
+        }
+
+    } else {
+        EXPECT_EQ(intersection.size(), answer.size());
+    }
+}
+
+TEST(MathComponentTest, ThreePoints_11) {
+    MathComponent result;
+    Triangle trian1{Point2f(-6, -1), Point2f(2, 6), Point2f(1, -6)};
+    Triangle trian2{Point2f(-6, 7), Point2f(-3, 2), Point2f(1.5, 0)};
+    Intersection intersection = result.calculate_intersection(trian1, trian2);
+    vector answer = {Findpoint(Equation(Point2f(-3, 2), Point2f(1.5, 0)),
+                               Equation(Point2f(-6, -1), Point2f(2, 6))),
+                     Findpoint(Equation(Point2f(-6, 7), Point2f(1.5, 0)),
+                               Equation(Point2f(-6, -1), Point2f(2, 6))),
+                     Point2f(1.5, 0)};
+
+    if (intersection.size() == answer.size()) {
+        for (unsigned long long i = 0; i < intersection.size(); i++) {
+            EXPECT_EQ(intersection[i].x, answer[i].x);
+            EXPECT_EQ(intersection[i].y, answer[i].y);
+        }
+
+    } else {
+        EXPECT_EQ(intersection.size(), answer.size());
+    }
+}
+
+TEST(MathComponentTest, ThreePoints_12) {
+    MathComponent result;
+    Triangle trian1{Point2f(-7, -2), Point2f(2, 5), Point2f(5, -2)};
+    Triangle trian2{Point2f(-4, 2), Point2f(2, 5), Point2f(5, -2)};
+    Intersection intersection = result.calculate_intersection(trian1, trian2);
+    vector answer = {Findpoint(Equation(Point2f(-7, -2), Point2f(2, 5)),
+                               Equation(Point2f(-4, 2), Point2f(5, -2))),
+                     Point2f(2, 5), Point2f(5, -2)};
+
+    if (intersection.size() == answer.size()) {
+        for (unsigned long long i = 0; i < intersection.size(); i++) {
+            EXPECT_EQ(intersection[i].x, answer[i].x);
+            EXPECT_EQ(intersection[i].y, answer[i].y);
+        }
+
+    } else {
+        EXPECT_EQ(intersection.size(), answer.size());
+    }
+}
+
+TEST(MathComponentTest, ThreePoints_13) {
+    MathComponent result;
+    Triangle trian1{Point2f(-9, 2), Point2f(-6, 7), Point2f(2, -2)};
+    Triangle trian2{Point2f(-6, 2), Point2f(-5, 4), Point2f(-4, 3)};
+    Intersection intersection = result.calculate_intersection(trian1, trian2);
+    vector answer = {Point2f(-6, 2), Point2f(-5, 4), Point2f(-4, 3)};
+
+    if (intersection.size() == answer.size()) {
+        for (unsigned long long i = 0; i < intersection.size(); i++) {
+            EXPECT_EQ(intersection[i].x, answer[i].x);
+            EXPECT_EQ(intersection[i].y, answer[i].y);
+        }
+
+    } else {
+        EXPECT_EQ(intersection.size(), answer.size());
+    }
+}
+
+TEST(MathComponentTest, ThreePoints_14) {
+    MathComponent result;
+    Triangle trian1{Point2f(1, -6), Point2f(2, 3), Point2f(8, 8)};
+    Triangle trian2{Point2f(2, 3), Point2f(3, 1), Point2f(3, 5)};
+    Intersection intersection = result.calculate_intersection(trian1, trian2);
+    vector answer = {Point2f(2, 3), Point2f(3, 1),
+                     Findpoint(Equation(Point2f(2, 3), Point2f(8, 8)),
+                               Equation(Point2f(3, 1), Point2f(3, 5)))};
+
+    if (intersection.size() == answer.size()) {
+        for (unsigned long long i = 0; i < intersection.size(); i++) {
+            EXPECT_EQ(intersection[i].x, answer[i].x);
+            EXPECT_EQ(intersection[i].y, answer[i].y);
+        }
+
+    } else {
+        EXPECT_EQ(intersection.size(), answer.size());
+    }
+}
+
+TEST(MathComponentTest, ThreePoints_15) {
+    MathComponent result;
+    Triangle trian1{Point2f(-5, -4), Point2f(-2, -5), Point2f(2, 2)};
+    Triangle trian2{Point2f(1, 2), Point2f(2, 2), Point2f(2, 1)};
+    Intersection intersection = result.calculate_intersection(trian1, trian2);
+    vector answer = {Findpoint(Equation(Point2f(-5, -4), Point2f(2, 2)),
+                               Equation(Point2f(1, 2), Point2f(2, 1))),
+                     Findpoint(Equation(Point2f(-2, -5), Point2f(2, 2)),
+                               Equation(Point2f(1, 2), Point2f(2, 1))),
+                     Point2f(2, 2)};
+
+    if (intersection.size() == answer.size()) {
+        for (unsigned long long i = 0; i < intersection.size(); i++) {
+            EXPECT_EQ(intersection[i].x, answer[i].x);
+            EXPECT_EQ(intersection[i].y, answer[i].y);
+        }
+
+    } else {
+        EXPECT_EQ(intersection.size(), answer.size());
+    }
+}
+
 // Four
 // Points-------------------------------------------------------------------------------------------------------------------------------
 
@@ -422,6 +541,76 @@ TEST(MathComponentTest, FourPoints_2) {
         for (unsigned long long i = 0; i < intersection.size(); i++) {
             EXPECT_FLOAT_EQ(intersection[i].x, answer[i].x);
             EXPECT_FLOAT_EQ(intersection[i].y, answer[i].y);
+        }
+
+    } else {
+        EXPECT_EQ(intersection.size(), answer.size());
+    }
+}
+
+TEST(MathComponentTest, FourPoints_3) {
+    MathComponent result;
+    Triangle trian1{Point2f(-9, 1), Point2f(-3, 9), Point2f(-1, -7)};
+    Triangle trian2{Point2f(-7, 1), Point2f(-4, 6), Point2f(4, -4)};
+    Intersection intersection = result.calculate_intersection(trian1, trian2);
+    vector answer = {Point2f(-7, 1), Point2f(-4, 6),
+                     Findpoint(Equation(Point2f(-4, 6), Point2f(4, -4)),
+                               Equation(Point2f(-3, 9), Point2f(-1, -7))),
+                     Findpoint(Equation(Point2f(-7, 1), Point2f(4, -4)),
+                               Equation(Point2f(-3, 9), Point2f(-1, -7)))};
+
+    if (intersection.size() == answer.size()) {
+        for (unsigned long long i = 0; i < intersection.size(); i++) {
+            EXPECT_EQ(intersection[i].x, answer[i].x);
+            EXPECT_EQ(intersection[i].y, answer[i].y);
+        }
+
+    } else {
+        EXPECT_EQ(intersection.size(), answer.size());
+    }
+}
+
+TEST(MathComponentTest, FourPoints_4) {
+    MathComponent result;
+    Triangle trian1{Point2f(-6, 1), Point2f(3, 2), Point2f(2, -4)};
+    Triangle trian2{Point2f(-2, 7), Point2f(4, 3), Point2f(2, -1)};
+    Intersection intersection = result.calculate_intersection(trian1, trian2);
+    vector answer = {Findpoint(Equation(Point2f(-6, 1), Point2f(3, 2)),
+                               Equation(Point2f(-2, 7), Point2f(2, -1))),
+                     Point2f(2, -1),
+                     Findpoint(Equation(Point2f(4, 3), Point2f(2, -1)),
+                               Equation(Point2f(3, 2), Point2f(2, -4))),
+                     Point2f(3, 2)};
+
+    if (intersection.size() == answer.size()) {
+        for (unsigned long long i = 0; i < intersection.size(); i++) {
+            EXPECT_EQ(intersection[i].x, answer[i].x);
+            EXPECT_EQ(intersection[i].y, answer[i].y);
+        }
+
+    } else {
+        EXPECT_EQ(intersection.size(), answer.size());
+    }
+}
+
+TEST(MathComponentTest, FourPoints_5) {
+    MathComponent result;
+    Triangle trian1{Point2f(-5, 3), Point2f(-4, 7), Point2f(9, -4)};
+    Triangle trian2{Point2f(-5, -4), Point2f(-3, -6), Point2f(7, 8)};
+    Intersection intersection = result.calculate_intersection(trian1, trian2);
+    vector answer = {Findpoint(Equation(Point2f(-5, 3), Point2f(9, -4)),
+                               Equation(Point2f(-5, -4), Point2f(7, 8))),
+                     Findpoint(Equation(Point2f(-5, 3), Point2f(9, -4)),
+                               Equation(Point2f(-3, -6), Point2f(7, 8))),
+                     Findpoint(Equation(Point2f(-4, 7), Point2f(9, -4)),
+                               Equation(Point2f(-5, -4), Point2f(7, 8))),
+                     Findpoint(Equation(Point2f(-4, 7), Point2f(9, -4)),
+                               Equation(Point2f(-3, -6), Point2f(7, 8)))};
+
+    if (intersection.size() == answer.size()) {
+        for (unsigned long long i = 0; i < intersection.size(); i++) {
+            EXPECT_EQ(intersection[i].x, answer[i].x);
+            EXPECT_EQ(intersection[i].y, answer[i].y);
         }
 
     } else {
@@ -489,6 +678,32 @@ TEST(MathComponentTest, FivePoints_3) {
     }
 }
 
+TEST(MathComponentTest, FivePoints_4) {
+    MathComponent result;
+    Triangle trian1{Point2f(-6, -2), Point2f(-4, 4), Point2f(8, 5)};
+    Triangle trian2{Point2f(-3, 2), Point2f(1, 8), Point2f(6, 1)};
+    Intersection intersection = result.calculate_intersection(trian1, trian2);
+    vector answer = {Point2f(-3, 2),
+                     Findpoint(Equation(Point2f(-4, 4), Point2f(8, 5)),
+                               Equation(Point2f(-3, 2), Point2f(1, 8))),
+                     Findpoint(Equation(Point2f(-6, -2), Point2f(8, 5)),
+                               Equation(Point2f(-3, 2), Point2f(6, 1))),
+                     Findpoint(Equation(Point2f(-4, 4), Point2f(8, 5)),
+                               Equation(Point2f(1, 8), Point2f(6, 1))),
+                     Findpoint(Equation(Point2f(-6, 2), Point2f(8, 5)),
+                               Equation(Point2f(1, 8), Point2f(6, 1)))};
+
+    if (intersection.size() == answer.size()) {
+        for (unsigned long long i = 0; i < intersection.size(); i++) {
+            EXPECT_EQ(intersection[i].x, answer[i].x);
+            EXPECT_EQ(intersection[i].y, answer[i].y);
+        }
+
+    } else {
+        EXPECT_EQ(intersection.size(), answer.size());
+    }
+}
+
 // Six
 // Points--------------------------------------------------------------------------------------------------------------------------------
 
@@ -499,6 +714,34 @@ TEST(MathComponentTest, SixPoints_1) {
     Intersection intersection = result.calculate_intersection(trian1, trian2);
     vector answer = {Point2f(-4, 3), Point2f(-2, 1), Point2f(-2, 5),
                      Point2f(2, 1),  Point2f(2, 5),  Point2f(4, 3)};
+
+    if (intersection.size() == answer.size()) {
+        for (unsigned long long i = 0; i < intersection.size(); i++) {
+            EXPECT_EQ(intersection[i].x, answer[i].x);
+            EXPECT_EQ(intersection[i].y, answer[i].y);
+        }
+
+    } else {
+        EXPECT_EQ(intersection.size(), answer.size());
+    }
+}
+
+TEST(MathComponentTest, SixPoints_2) {
+    MathComponent result;
+    Triangle trian1{Point2f(3, 2), Point2f(4, 5), Point2f(6, 3)};
+    Triangle trian2{Point2f(3, 4), Point2f(5, 5), Point2f(5, 2)};
+    Intersection intersection = result.calculate_intersection(trian1, trian2);
+    vector answer = {Findpoint(Equation(Point2f(3, 4), Point2f(5, 2)),
+                               Equation(Point2f(3, 2), Point2f(4, 5))),
+                     Findpoint(Equation(Point2f(3, 4), Point2f(5, 5)),
+                               Equation(Point2f(3, 2), Point2f(4, 5))),
+                     Findpoint(Equation(Point2f(3, 4), Point2f(5, 5)),
+                               Equation(Point2f(4, 5), Point2f(6, 3))),
+                     Findpoint(Equation(Point2f(3, 2), Point2f(6, 3)),
+                               Equation(Point2f(3, 4), Point2f(5, 2))),
+                     Findpoint(Equation(Point2f(3, 2), Point2f(6, 3)),
+                               Equation(Point2f(5, 2), Point2f(5, 5))),
+                     Point2f(5, 4)};
 
     if (intersection.size() == answer.size()) {
         for (unsigned long long i = 0; i < intersection.size(); i++) {

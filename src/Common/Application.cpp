@@ -2,6 +2,7 @@
 
 #include <array>
 #include <vector>
+#include <algorithm>
 
 GlobalStorage global_storage;
 
@@ -31,11 +32,11 @@ auto GlobalStorage::get_ratio() -> float { return ratio; }
 
 void GlobalStorage::set_ratio(float ratio_value) { ratio = ratio_value; }
 
-void GlobalStorage::set_window(GLFWwindow* g_window) { window = g_window; }
+// void GlobalStorage::set_window(GLFWwindow* g_window) { window = g_window; }
 
-auto GlobalStorage::get_window() -> GLFWwindow* { return window; }
+// auto GlobalStorage::get_window() -> GLFWwindow* { return window; }
 
-void Application::register_component(IComponent&& component) {
+void Application::register_component(IComponent& component) {
     component.on_register();
     components.push_back(&component);
 }
@@ -49,9 +50,7 @@ void Application::run() {
     finish();
 }
 
-auto Application::is_running() -> bool {
-    return glfwWindowShouldClose(global_storage.get_window()) == 0;
-}
+auto Application::is_running() -> bool { return true; }
 
 void Application::process_input() {
     for (auto& component : components) {
@@ -75,4 +74,21 @@ void Application::finish() {
     for (auto& component : components) {
         component->on_finish();
     }
+}
+
+float get_min_y(const Triangle& triangle_1, const Triangle& triangle_2) {
+    return std::min({triangle_1[0].y, triangle_1[1].y, triangle_1[2].y,
+                     triangle_2[0].y, triangle_2[1].y, triangle_2[2].y});
+}
+float get_min_x(const Triangle& triangle_1, const Triangle& triangle_2) {
+    return std::min({triangle_1[0].x, triangle_1[1].x, triangle_1[2].x,
+                     triangle_2[0].x, triangle_2[1].x, triangle_2[2].x});
+}
+float get_max_y(const Triangle& triangle_1, const Triangle& triangle_2) {
+    return std::max({triangle_1[0].y, triangle_1[1].y, triangle_1[2].y,
+                     triangle_2[0].y, triangle_2[1].y, triangle_2[2].y});
+}
+float get_max_x(const Triangle& triangle_1, const Triangle& triangle_2) {
+    return std::max({triangle_1[0].x, triangle_1[1].x, triangle_1[2].x,
+                     triangle_2[0].x, triangle_2[1].x, triangle_2[2].x});
 }

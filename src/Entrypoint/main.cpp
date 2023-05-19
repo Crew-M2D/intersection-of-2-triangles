@@ -16,9 +16,11 @@ int main() {
     // как сделаю графику все поправлю и все сделаю
 
     InputComponent input_output;
-    input_output.on_input_process();
+    GraphicsComponent graphics_component;
     MathComponent math;
+    input_output.on_input_process();
     math.on_update();
     input_output.on_render();
+    graphics_component.on_render();
     return 0;
 }

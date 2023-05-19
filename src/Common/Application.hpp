@@ -1,6 +1,6 @@
 #pragma once
 
-#include <GLFW/glfw3.h>
+// #include <GLFW/glfw3.h>
 
 #include <array>
 #include <vector>
@@ -33,10 +33,11 @@ public:
     void set_intersection(const Intersection& intersection_values);
 
     auto get_ratio() -> float;
+
     void set_ratio(float ratio_value);
 
-    auto get_window() -> GLFWwindow*;
-    void set_window(GLFWwindow* window);
+    // auto get_window() -> GLFWwindow*;
+    // void set_window(GLFWwindow* window);
 
 private:
     Triangle triangle_1 = {Point(-5.F, 0.F), Point(0.F, 5.F), Point(5.F, 0.F)};
@@ -46,7 +47,7 @@ private:
 
     float ratio = 1.0F;
 
-    GLFWwindow* window;
+    // GLFWwindow* window;
 
 };
 
@@ -65,7 +66,7 @@ class Application {
     std::vector<IComponent*> components;
 
 public:
-    void register_component(IComponent&& component);
+    void register_component(IComponent& component);
 
     void run();
 
@@ -80,3 +81,8 @@ private:
 
     void finish();
 };
+
+float get_min_y(const Triangle& triangle_1, const Triangle& triangle_2);
+float get_min_x(const Triangle& triangle_1, const Triangle& triangle_2);
+float get_max_y(const Triangle& triangle_1, const Triangle& triangle_2);
+float get_max_x(const Triangle& triangle_1, const Triangle& triangle_2);
