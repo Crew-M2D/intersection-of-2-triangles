@@ -1,292 +1,185 @@
+#include "GraphicsComponent.hpp"
+#include <fmt/core.h>
 #include <glad/glad.h>
+#include <GLFW/glfw3.h>
+#include <unistd.h>
+#include <imgui.h>
+#include <3dParty/imgui_impl_glfw.h>
+#include <3dParty/imgui_impl_opengl3.h>
 
-//-------------------------------------
+// #include "imgui_impl_opengl3.h"
+#include <stdio.h>
 
+// Include glfw3.h after our OpenGL definitions
 #include <GLFW/glfw3.h>
 
-//-------------------------------------
 
-#include <imgui.h>
-#include <imgui_impl_glfw.h>
-#include <imgui_impl_opengl3.h>
+static void glfw_error_callback(int error, const char* description)
+{
+    fprintf(stderr, "Glfw Error %d: %s\n", error, description);
+}
 
-#include <algorithm>
-#include <array>
-#include <iostream>
-#include <stdexcept>
-#include <vector>
+void GraphicsComponent::run() { 
+    fmt::print("haha");
 
-#include "Application.hpp"
-#include "GraphicsComponent.hpp"
+ glfwSetErrorCallback(glfw_error_callback);
+    if (!glfwInit())
+        return;
 
-// размеры окна
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 800;
-
-// программный шейдерный объект
-GLuint shaderProgram;
-
-// Vertex Shader source code
-const char* vertexShaderSource =
-    "#version 330 core\n"
-    "layout (location = 0) in vec3 aPos;\n"
-    "void main()\n"
-    "{\n"
-    "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-    "}\0";
-// Fragment Shader source code
-const char* fragmentShaderSource =
-    "#version 330 core\n"
-    "out vec4 FragColor;\n"
-    "uniform vec4 color;\n"
-    "void main()\n"
-    "{\n"
-    "   FragColor = color;\n"
-    "}\n\0";
-
-class Polygon {
-private:
-    unsigned int VAO;  // объект Vertex Array
-    unsigned int VBO;  // объекты буфера вершин
-    std::array<float, 4> color;
-    std::vector<float> vertices = {};
-
-public:
-    // если рисуем треугольник
-    Polygon(const Triangle& triangle) {
-        // заполнение вектора вершинами треугольника
-        for (unsigned long long i = 0; i < 3; i++) {
-            vertices.push_back(triangle[i].x);
-            vertices.push_back(triangle[i].y);
-            vertices.push_back(0.F);
-        }
-    }
-    // если рисуем пересечение
-    Polygon(const Intersection& intersection) {
-        for (unsigned long long i = 0; i < intersection.size(); i++) {
-            vertices.push_back(intersection[i].x);
-            vertices.push_back(intersection[i].y);
-            vertices.push_back(0.F);
-        }
-    }
-    void scaling_of_vertices(float max_value, float min_value) {
-        float ratio = global_storage.get_ratio();
-        // масштабируем координаты треугольниуов
-        for (unsigned long long i = 0; i < vertices.size() / 3; i++) {
-            vertices[i * 3] =
-                (vertices[i * 3] - (max_value + min_value) / 2.0F) * ratio;
-            vertices[1 + (i * 3)] =
-                (vertices[1 + (i * 3)] - (max_value + min_value) / 2.0F) *
-                ratio;
-        }
-    }
-    void setup_VAO_VBO() {
-        glGenVertexArrays(1, &VAO);
-        glGenBuffers(1, &VBO);
-
-        glBindVertexArray(VAO);
-
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glBufferData(GL_ARRAY_BUFFER,
-                     static_cast<long long>(vertices.size()) *
-                         static_cast<long long>(sizeof(float)),
-                     vertices.data(), GL_STATIC_DRAW);
-
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float),
-                              (void*)0);
-        glEnableVertexAttribArray(0);
-
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-        glBindVertexArray(0);
-    }
-    void set_color(float r, float g, float b, float a) {
-        color[0] = r;
-        color[1] = g;
-        color[2] = b;
-        color[3] = a;
-    }
-    void draw() {
-        glBindVertexArray(VAO);
-        glUniform4f(glGetUniformLocation(shaderProgram, "color"), color[0],
-                    color[1], color[2], color[3]);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0,
-                     static_cast<int>(vertices.size() / 3));
-    }
-    void draw_points() {
-        glBindVertexArray(VAO);
-        glUniform4f(glGetUniformLocation(shaderProgram, "color"), 0.F, 0.F, 0.F,
-                    1.F);
-        glDrawArrays(GL_POINTS, 0, static_cast<int>(vertices.size() / 3));
-    }
-    void delete_VAO_VBO() {
-        glDeleteVertexArrays(1, &VAO);
-        glDeleteBuffers(1, &VBO);
-    }
-};
-
-void GraphicsComponent::on_render() {
-    // ИНЦИЛИЗАЦИЯ И НАСТРОЙКА GLFW
-    glfwInit();
-    // используем версию 3.3
+    // Decide GL+GLSL versions
+#ifdef __APPLE__
+    // GL 3.2 + GLSL 150
+    const char* glsl_version = "#version 150";
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    // используем CORE profile = используем только современные функции
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // Required on Mac
+#else
+    // GL 3.0 + GLSL 130
+    const char* glsl_version = "#version 130";
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+    //glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
+    //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
+#endif
 
-    // -------------------------------------------------------
-    // СОЗДАНИЕ ОКНА GLFW
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT,
-                                          "Intersection of 2 triangles", 0, 0);
-    // ошибка если окно не получилось создать
-    if (window == NULL) {
-        glfwTerminate();
-        throw std::runtime_error("Failed to create GLFW window");
-    }
-    // добавляем окно в текущий контекст
+    // Create window with graphics context
+    GLFWwindow* window = glfwCreateWindow(1280, 720, "Dear ImGui GLFW+OpenGL3 example", NULL, NULL);
+    if (window == NULL)
+        return;
     glfwMakeContextCurrent(window);
+    glfwSwapInterval(1); // Enable vsync
 
-    // -------------------------------------------------------
-    // НАСТРОЙКА OpenGl
-    gladLoadGL();
+    // Initialize OpenGL loader
+#if defined(IMGUI_IMPL_OPENGL_LOADER_GL3W)
+    bool err = gl3wInit() != 0;
+#elif defined(IMGUI_IMPL_OPENGL_LOADER_GLEW)
+    bool err = glewInit() != GLEW_OK;
+#elif defined(IMGUI_IMPL_OPENGL_LOADER_GLAD)
+    bool err = gladLoadGL() == 0;
+#elif defined(IMGUI_IMPL_OPENGL_LOADER_GLAD2)
+    bool err = gladLoadGL(glfwGetProcAddress) == 0; // glad2 recommend using the windowing library loader instead of the (optionally) bundled one.
+#elif defined(IMGUI_IMPL_OPENGL_LOADER_GLBINDING2)
+    bool err = false;
+    glbinding::Binding::initialize();
+#elif defined(IMGUI_IMPL_OPENGL_LOADER_GLBINDING3)
+    bool err = false;
+    glbinding::initialize([](const char* name) { return (glbinding::ProcAddress)glfwGetProcAddress(name); });
+#else
+    bool err = false; // If you use IMGUI_IMPL_OPENGL_LOADER_CUSTOM, your loader is likely to requires some form of initialization.
+#endif
+    if (err)
+    {
+        fprintf(stderr, "Failed to initialize OpenGL loader!\n");
+        return;
+    }
 
-    glViewport(0, 0, 800, 800);
-
-    // -------------------------------------------------------
-    // ВЕРШИННЫЙ И ФРАГМЕНТНЫЙ ШЕЙДЕРНЫЕ ОБЪЕКТЫ
-    // вершинный
-    GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    // прикрепляем источник вершинного шейдера к объекту вершинного шейдера
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-    // компилируем вершинный шейдер в машинный код
-    glCompileShader(vertexShader);
-
-    // фрагментный
-    GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    // прикрепляем источник фрагментного шейдера к объекту фрагментного шейдера
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-    // компилируем фрагментный шейдер в машинный код
-    glCompileShader(fragmentShader);
-
-    //-------------------------------------------------------
-    // ШЕЙДЕРНЫЙ ПРОГРАММНЫЙ ОБЪЕКТ
-    shaderProgram = glCreateProgram();
-    // прикрепляем вершинный и фрагментный шейдерные объекты
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    // связывание всех шейдеров вместе в шейдерный программный объект
-    glLinkProgram(shaderProgram);
-
-    // удаляем вершинный и фрагментный шейдерные объекты
-    // теперь они бесполезны
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
-
-    // -------------------------------------------------------
-    // ПОЛИГОНЫ ДЛЯ ОТРИСОВКИ
-
-    // получаем треугольники и пересечение из глобального хранилища
-    Triangle triangle_1_coords = global_storage.get_triangle_1();
-    Triangle triangle_2_coords = global_storage.get_triangle_2();
-    Intersection intersection_coords = global_storage.get_intersection();
-
-    // создаем полигоны
-    Polygon triangle_1(triangle_1_coords);
-    Polygon triangle_2(triangle_2_coords);
-    Polygon intersection(intersection_coords);
-
-    // не забываем отмасштабировать их
-    float max_value = std::max(get_max_x(triangle_1_coords, triangle_2_coords),
-                               get_max_y(triangle_1_coords, triangle_2_coords));
-    float min_value = std::min(get_min_x(triangle_1_coords, triangle_2_coords),
-                               get_min_y(triangle_1_coords, triangle_2_coords));
-    triangle_1.scaling_of_vertices(max_value, min_value);
-    triangle_2.scaling_of_vertices(max_value, min_value);
-    intersection.scaling_of_vertices(max_value, min_value);
-
-    // -------------------------------------------------------
-    // НАСТРОЙКА КОНТЕЙНЕРОВ ДЛЯ VAO и VBO
-    triangle_1.setup_VAO_VBO();
-    triangle_2.setup_VAO_VBO();
-    intersection.setup_VAO_VBO();
-
-    // -------------------------------------------------------
-    // ЦВЕТА
-    triangle_1.set_color(1.0F, 1.0F, 0.0F, 0.25F);     // желтый
-    triangle_2.set_color(0.0F, 1.0F, 1.0F, 0.25F);     // голубой
-    intersection.set_color(0.0F, 1.0F, 0.24F, 0.25F);  // зеленый
-
-    // -------------------------------------------------------
-    // ИНЦИЛИЗИРУЕМ ImGui
+    // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO();
-    (void)io;
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+
+    // Setup Dear ImGui style
     ImGui::StyleColorsDark();
+    //ImGui::StyleColorsClassic();
+
+    // Setup Platform/Renderer bindings
     ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL3_Init("#version 330");
+    ImGui_ImplOpenGL3_Init(glsl_version);
 
-    glUseProgram(shaderProgram);
+    // Load Fonts
+    // - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
+    // - AddFontFromFileTTF() will return the ImFont* so you can store it if you need to select the font among multiple.
+    // - If the file cannot be loaded, the function will return NULL. Please handle those errors in your application (e.g. use an assertion, or display an error and quit).
+    // - The fonts will be rasterized at a given size (w/ oversampling) and stored into a texture when calling ImFontAtlas::Build()/GetTexDataAsXXXX(), which ImGui_ImplXXXX_NewFrame below will call.
+    // - Read 'docs/FONTS.md' for more instructions and details.
+    // - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \\ !
+    //io.Fonts->AddFontDefault();
+    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf", 16.0f);
+    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
+    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
+    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/ProggyTiny.ttf", 10.0f);
+    //ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
+    //IM_ASSERT(font != NULL);
 
-    // -------------------------------------------------------
-    // ЦИКЛ РЕНДЕРИНГА
-    while (!glfwWindowShouldClose(window)) {
-        // цвет фона
-        glClearColor(0.5F, 0.5F, 0.5F, 1.F);
-        // очистка прошлого буфера и присвоение ему нового цвета
-        glClear(GL_COLOR_BUFFER_BIT);
+    // Our state
+    bool show_demo_window = true;
+    bool show_another_window = false;
+    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-        // сообщаем ImGui что начинается новый кадр
+    // Main loop
+    while (!glfwWindowShouldClose(window))
+    {
+        // Poll and handle events (inputs, window resize, etc.)
+        // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
+        // - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application.
+        // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application.
+        // Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
+        glfwPollEvents();
+
+        // Start the Dear ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        glUseProgram(shaderProgram);
+        // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
+        if (show_demo_window)
+            ImGui::ShowDemoWindow(&show_demo_window);
 
-        triangle_1.draw();
-        triangle_2.draw();
-        intersection.draw();
-        intersection.draw_points();
+        // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
+        {
+            static float f = 0.0f;
+            static int counter = 0;
 
-        // ОКНО С ИНФОРМАЦИЕЙ О ПЕРЕСЕЧЕНИИ
-        ImGui::Begin("Intersection points");
-        // текст
-        if (intersection_coords.size() == 0) {
-            ImGui::Text("There are no points of intersection:");
-        } else {
-            ImGui::Text("There are %d points of intersection:\n",
-                        static_cast<int>(intersection_coords.size()));
-            for (unsigned long long i = 0; i < intersection_coords.size();
-                 i++) {
-                ImGui::Text("%d point:\n%f %f", static_cast<int>(i+1),
-                            intersection_coords[i].x, intersection_coords[i].y);
-            }
+            ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+
+            ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+            ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
+            ImGui::Checkbox("Another Window", &show_another_window);
+
+            ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+            ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+
+            if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+                counter++;
+            ImGui::SameLine();
+            ImGui::Text("counter = %d", counter);
+
+            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+            ImGui::End();
         }
-        //
-        ImGui::End();
 
-        // РЕНДЕР ЭЛЕМЕНТОВ ImGui
+        // 3. Show another simple window.
+        if (show_another_window)
+        {
+            ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+            ImGui::Text("Hello from another window!");
+            if (ImGui::Button("Close Me"))
+                show_another_window = false;
+            ImGui::End();
+        }
+
+        // Rendering
         ImGui::Render();
-		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        int display_w, display_h;
+        glfwGetFramebufferSize(window, &display_w, &display_h);
+        glViewport(0, 0, display_w, display_h);
+        glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
+        glClear(GL_COLOR_BUFFER_BIT);
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-        // обновление экрана
         glfwSwapBuffers(window);
-
-        glfwPollEvents();
     }
-    // -------------------------------------------------------
-    // УДАЛЯЕМ ВСЕ ОБЪЕКТЫ, ЧТО МЫ СОЗДАЛИ
 
-    // удаляю все экземпляры ImGui
+    // Cleanup
     ImGui_ImplOpenGL3_Shutdown();
-	ImGui_ImplGlfw_Shutdown();
-	ImGui::DestroyContext();
-    // удаляю созданные вершинные объекты
-    triangle_1.delete_VAO_VBO();
-    triangle_2.delete_VAO_VBO();
-    intersection.delete_VAO_VBO();
-    // удаляю шейдерную программу
-    glDeleteProgram(shaderProgram);
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
 
+    glfwDestroyWindow(window);
     glfwTerminate();
 }
+
+

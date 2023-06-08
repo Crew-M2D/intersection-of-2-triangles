@@ -1,3 +1,0 @@
-[submodule "vendors/glfw"]
-	path = vendors/glfw
-	url = git@github.com:glfw/glfw.git
