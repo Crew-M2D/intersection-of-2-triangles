@@ -11,7 +11,7 @@ winget install -e --id Kitware.CMake
 ```bash
 winget install -e --id LLVM.LLVM
 ```
-3. Make sure cmake, mingw and llvm in PATH
+3. Make sure cmake and llvm in PATH
 4. Restart PC
 5. Ensure cmake and clang are installed properly:
 ```bash
