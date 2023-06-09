@@ -11,13 +11,9 @@ winget install -e --id Kitware.CMake
 ```bash
 winget install -e --id LLVM.LLVM
 ```
-3. Install mingw32-make
-```bash
-winget install -e --id GnuWin32.Make
-```
-4. Make sure cmake, mingw and llvm in PATH
-5. Restart PC
-6. Ensure cmake, mingw32-make and clang are installed properly:
+3. Make sure cmake, mingw and llvm in PATH
+4. Restart PC
+5. Ensure cmake and clang are installed properly:
 ```bash
 clang++ --version
 ```
@@ -25,16 +21,16 @@ clang++ --version
 cmake --version
 ```
 ```bash
-mingw32-make --version
+make --version
 ```
 if there are errors go back to point 3
 
-7. Configure project:
+6. Configure project:
 ```bash
 cmake -S . -B build -G"MinGW Makefiles" -D"CMAKE_MAKE_PROGRAM:PATH=C:\Program Files (x86)\GnuWin32\bin\make"
 ```
 Specify last flag with your make path. 
-8. Build:
+7. Build:
 ```bash
 cmake --build build
 ```
