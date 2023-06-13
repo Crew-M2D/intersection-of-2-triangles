@@ -1,15 +1,16 @@
 #include "MathComponent.hpp"
 
-#include <stdio.h>
-
 #include <algorithm>
+#include <cstdint>
+#include <cstdio>
 #include <iostream>
 #include <ostream>
 #include <vector>
 
 #include "Application.hpp"
 
-Point get_vector_coords(const Point& point_1, const Point& point_2) {
+
+auto get_vector_coords(const Point& point_1, const Point& point_2) -> Point {
     float vec_x = point_2.x - point_1.x;
     float vec_y = point_2.y - point_1.y;
     Point vec(vec_x, vec_y);
@@ -17,8 +18,8 @@ Point get_vector_coords(const Point& point_1, const Point& point_2) {
 }
 
 // Функция проверяет принадлежит ли точка треугольнику
-bool point_inside_triangle(const Triangle& triangle,
-                           const Point& point_to_check) {
+auto point_inside_shape(const Shape& triangle, const Point& point_to_check)
+    -> bool {
     // Векторный способ
 
     // Вычислеям координаты векторов всех сторон треугольника
@@ -45,16 +46,20 @@ bool point_inside_triangle(const Triangle& triangle,
            (mixed_product1 < 0 && mixed_product2 < 0 && mixed_product3 < 0);
 }
 
-bool value_between_others(float value, float other1, float other2) {
+auto value_between_others(float value, float other1, float other2) -> bool {
     return ((std::min(other1, other2) <= value) &&
             (value <= std::max(other1, other2)));
 }
 
-// проверка, что треугольники одинаковые
-bool triangle_are_same(const Triangle& triangle_1, const Triangle& triangle_2) {
-    for (unsigned long long i = 0; i < 3; i++) {
-        if ((triangle_1[i].x != triangle_2[i].x) ||
-            (triangle_1[i].y != triangle_2[i].y)) {
+// проверка, что полигоны одинаковые
+auto polygons_are_same(const Shape& polygon_1, const Shape& polygon_2)
+    -> bool {
+    if (polygon_1.size()!=polygon_2.size()) {
+        return false;
+    }
+    for (std::uint64_t i = 0; i < polygon_1.size(); i++) {
+        if ((polygon_1[i].x != polygon_2[i].x) ||
+            (polygon_1[i].y != polygon_2[i].y)) {
             return false;
         }
     }
@@ -65,19 +70,19 @@ bool triangle_are_same(const Triangle& triangle_1, const Triangle& triangle_2) {
 // коллинеарны, то есть параллельны или противоположно направлены
 // в нвшем случае первой отрезок [fst_p_segment_1, scd_p_segment_2]
 // и второй аналогично
-bool two_segments_on_one_line(const Point& fst_p_segment_1,
+auto two_segments_on_one_line(const Point& fst_p_segment_1,
                               const Point& scd_p_segment_1,
                               const Point& fst_p_segment_2,
-                              const Point& scd_p_segment_2) {
+                              const Point& scd_p_segment_2) -> bool {
     return ((fst_p_segment_1.x - fst_p_segment_2.x) *
             (scd_p_segment_1.y - scd_p_segment_2.y)) ==
            ((fst_p_segment_1.y - fst_p_segment_2.y) *
             (scd_p_segment_1.x - scd_p_segment_2.x));
 }
 
-bool point_already_recorded(const Intersection& intersection,
-                            const Point& point_to_check) {
-    for (unsigned long long i = 0; i < intersection.size(); i++) {
+auto point_already_recorded(const Shape& intersection,
+                            const Point& point_to_check) -> bool {
+    for (std::uint64_t i = 0; i < intersection.size(); i++) {
         if ((point_to_check.x == intersection[i].x) &&
             (point_to_check.y == intersection[i].y)) {
             return true;
@@ -88,8 +93,9 @@ bool point_already_recorded(const Intersection& intersection,
 
 // возвращает точку пересечения двух прямых
 // в этом случае прямые AB и CD
-Point find_intersection_point_of_lines(const Point& p_A, const Point& p_B,
-                                       const Point& p_C, const Point& p_D) {
+auto find_intersection_point_of_lines(const Point& p_A, const Point& p_B,
+                                      const Point& p_C, const Point& p_D)
+    -> Point {
     float new_x =
         ((p_A.x * p_B.y - p_A.y * p_B.x) * (p_C.x - p_D.x) -
          (p_A.x - p_B.x) * (p_C.x * p_D.y - p_C.y * p_D.x)) /
@@ -102,31 +108,28 @@ Point find_intersection_point_of_lines(const Point& p_A, const Point& p_B,
     return new_point;
 }
 
-auto MathComponent::calculate_intersection(Triangle triangle_1,
-                                           Triangle triangle_2)
-    -> Intersection {
-    Intersection intersection_points;
+auto MathComponent::calculate_intersection(Shape polygon_1, Shape polygon_2)
+    -> Shape {
+    Shape intersection_points;
 
-    // сортируем треугольники по x
-    std::sort(triangle_1.begin(), triangle_1.end(),
-              [](Point a, Point b) { return a.x < b.x; });
-    std::sort(triangle_2.begin(), triangle_2.end(),
-              [](Point a, Point b) { return a.x < b.x; });
+    // сортируем фигуры
+    polygon_1.sort();
+    polygon_2.sort();
 
     // если треугольники одинаковые, то вернем в качестве пересечения просто
     // один из треугольников
-    if (triangle_are_same(triangle_1, triangle_2)) {
-        return {triangle_1[0], triangle_1[1], triangle_1[2]};
+    if (polygons_are_same(polygon_1, polygon_2)) {
+        return polygon_1;
     }
 
     // находим точки пересечения по прямым
-    for (unsigned long long i = 0; i < 3; ++i) {
-        for (unsigned long long j = 0; j < 3; ++j) {
+    for (std::uint64_t i = 0; i < 3; ++i) {
+        for (std::uint64_t j = 0; j < 3; ++j) {
             bool indicator = true;
-            Point current_p_tr_1 = triangle_1[i];
-            Point neighbor_p_tr_1 = triangle_1[(i + 1) % 3];
-            Point current_p_tr_2 = triangle_2[j];
-            Point neighbor_p_tr_2 = triangle_2[(j + 1) % 3];
+            Point current_p_tr_1 = polygon_1[i];
+            Point neighbor_p_tr_1 = polygon_1[(i + 1) % 3];
+            Point current_p_tr_2 = polygon_2[j];
+            Point neighbor_p_tr_2 = polygon_2[(j + 1) % 3];
             if (!two_segments_on_one_line(current_p_tr_1, current_p_tr_2,
                                           neighbor_p_tr_1, neighbor_p_tr_2)) {
                 Point new_intersection_point = find_intersection_point_of_lines(
@@ -152,60 +155,49 @@ auto MathComponent::calculate_intersection(Triangle triangle_1,
                 if (indicator) {
                     if (!point_already_recorded(intersection_points,
                                                 new_intersection_point)) {
-                        intersection_points.push_back(new_intersection_point);
+                        intersection_points.add(new_intersection_point);
                     }
                 }
             }
         }
     }
     // одна из точек первого треугольника внутри второго
-    for (unsigned long long i = 0; i < 3; i++) {
-        if (point_inside_triangle(triangle_2, triangle_1[i])) {
-            if (!point_already_recorded(intersection_points, triangle_1[i])) {
-                intersection_points.push_back(triangle_1[i]);
+    for (std::uint64_t i = 0; i < 3; i++) {
+        if (point_inside_shape(polygon_2, polygon_1[i])) {
+            if (!point_already_recorded(intersection_points, polygon_1[i])) {
+                intersection_points.add(polygon_1[i]);
             }
         }
     }
     // одна из точек второго треугольника внутри первого
-    for (unsigned long long i = 0; i < 3; i++) {
-        if (point_inside_triangle(triangle_1, triangle_2[i])) {
-            if (!point_already_recorded(intersection_points, triangle_2[i])) {
-                intersection_points.push_back(triangle_2[i]);
+    for (std::uint64_t i = 0; i < 3; i++) {
+        if (point_inside_shape(polygon_1, polygon_2[i])) {
+            if (!point_already_recorded(intersection_points, polygon_2[i])) {
+                intersection_points.add(polygon_2[i]);
             }
         }
     }
 
-    // соритруем точки пересечения по x
-    std::sort(intersection_points.begin(), intersection_points.end(),
-              [](Point a, Point b) { return a.x < b.x; });
-
-    // добавила сортировку, чтобы при совпадающих значениях x сначала шло то, у
-    // которого меньше y
-    std::sort(intersection_points.begin(), intersection_points.end(),
-              [](Point a, Point b) {
-                  if (a.x == b.x) {
-                      return a.y < b.y;
-                  }
-                  return a.x < b.x;
-              });
+    // соритруем
+    intersection_points.sort();
     return intersection_points;
 }
 
-auto MathComponent::calculate_ratio(Triangle triangle_1, Triangle triangle_2)
+auto MathComponent::calculate_ratio(const Shape& polygon_1, const Shape& polygon_2)
     -> float {
     // вычисление максимальных и минимальных x и y
-    float max_x = get_max_x(triangle_1, triangle_2);
-    float min_x = get_min_x(triangle_1, triangle_2);
-    float max_y = get_max_y(triangle_1, triangle_2);
-    float min_y = get_min_y(triangle_1, triangle_2);
+    float max_x = std::max(polygon_1.get_max_x(), polygon_2.get_max_x());
+    float min_x = std::max(polygon_1.get_min_x(), polygon_2.get_min_x());
+    float max_y = std::max(polygon_1.get_max_y(), polygon_2.get_max_y());
+    float min_y = std::max(polygon_1.get_min_y(), polygon_2.get_min_y());
     float ratio = 2.0F / (std::max(max_y, max_x) - std::min(min_y, min_x));
     return ratio;
 }
 
 void MathComponent::on_update() {
     // Считываешь треугольники из глобального хранилища
-    auto triangle_1 = global_storage.get_triangle_1();
-    auto triangle_2 = global_storage.get_triangle_2();
+    auto triangle_1 = global_storage.get_polygon_1();
+    auto triangle_2 = global_storage.get_polygon_2();
     // Находишь точки пересечения
     auto processed_intersection =
         calculate_intersection(triangle_1, triangle_2);

@@ -2,9 +2,14 @@
 
 // #include <GLFW/glfw3.h>
 
+#include <algorithm>
 #include <array>
+#include <cstdint>
+#include <initializer_list>
+#include <stdexcept>
 #include <vector>
 
+// Структура точки
 
 struct Point2f {
     float x;
@@ -15,40 +20,68 @@ struct Point2f {
     Point2f(float x_value, float y_value);
 };
 
-
-
 using Point = Point2f;
-using Triangle = std::array<Point, 3>;
-using Intersection = std::vector<Point>;
+
+// Класс фигуры
+
+class Shape {
+private:
+    std::vector<Point> shape_coords;
+
+public:
+    Shape() = default;
+
+    Shape(std::initializer_list<Point> list);
+
+    // перегрузка оператора индексации
+    auto operator[](std::uint64_t index) -> Point&;
+    auto operator[](std::uint64_t index) const -> const Point&;
+
+    // добавление новой точки в конец
+    void add(Point new_point);
+
+    // сортировка
+    void sort();
+
+    // размер
+    auto size() -> std::uint64_t;
+    [[nodiscard]] auto size() const -> std::uint64_t;
+
+    auto empty() -> bool;
+
+    // получение максимального и минимального
+    [[nodiscard]] auto get_max_x() const -> float;
+    [[nodiscard]] auto get_min_x() const -> float;
+    [[nodiscard]] auto get_max_y() const -> float;
+    [[nodiscard]] auto get_min_y() const -> float;
+};
 
 class GlobalStorage {
 public:
-    auto get_triangle_1() -> const Triangle&;
-    void set_triangle_1(const Triangle& triangle_1_values);
+    auto get_polygon_1() -> const Shape&;
+    void set_polygon_1(const Shape& polygon_1_values);
 
-    auto get_triangle_2() -> const Triangle&;
-    void set_triangle_2(const Triangle& triangle_2_values);
+    auto get_polygon_2() -> const Shape&;
+    void set_polygon_2(const Shape& polygon_2_values);
 
-    auto get_intersection() -> const Intersection&;
-    void set_intersection(const Intersection& intersection_values);
+    auto get_intersection() -> const Shape&;
+    void set_intersection(const Shape& intersection_values);
 
     auto get_ratio() -> float;
-
     void set_ratio(float ratio_value);
 
     // auto get_window() -> GLFWwindow*;
     // void set_window(GLFWwindow* window);
 
 private:
-    Triangle triangle_1 = {Point(-5.F, 0.F), Point(0.F, 5.F), Point(5.F, 0.F)};
-    Triangle triangle_2 = {Point(0.F, 0.F), Point(0.F, 5.F), Point(5.F, 0.F)};
+    Shape polygon_1;
+    Shape polygon_2;
 
-    Intersection intersection;
+    Shape intersection;
 
     float ratio = 1.0F;
 
     // GLFWwindow* window;
-
 };
 
 extern GlobalStorage global_storage;
@@ -81,8 +114,3 @@ private:
 
     void finish();
 };
-
-float get_min_y(const Triangle& triangle_1, const Triangle& triangle_2);
-float get_min_x(const Triangle& triangle_1, const Triangle& triangle_2);
-float get_max_y(const Triangle& triangle_1, const Triangle& triangle_2);
-float get_max_x(const Triangle& triangle_1, const Triangle& triangle_2);
