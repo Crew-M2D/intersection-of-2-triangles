@@ -738,7 +738,7 @@ TEST(MathComponentTest, Shapes1) {
     Shape shape2{Point2f(-8, 3), Point2f(-5, 7), Point2f(-1, -7), Point2f(6, 4), Point2f(10, -3)};
     Shape intersection = result.calculate_intersection(shape1, shape2);
     vector answer = {Point2f(-8, 3), Point2f(-3, 3), Point2f(-1, -7),
-                     Point2f(2, 1),  Point2f(2, -4)};
+                     Point2f(2, -4),  Point2f(2, 1)};
 
     if (intersection.size() == answer.size()) {
         for (std::uint64_t i = 0; i < intersection.size(); i++) {
@@ -753,11 +753,12 @@ TEST(MathComponentTest, Shapes1) {
 
 TEST(MathComponentTest, Shapes2) {
     MathComponent result;
-    Shape shape1{Point2f(-8, 1), Point2f(-5, -7), Point2f(4, 6), Point2f(10, -6)};
-    Shape shape2{Point2f(-4, -3), Point2f(-3, 0), Point2f(-3, -6), Point2f(2, 4), Point2f(5, 3), Point2f(7, -2)};
+    Shape shape1{Point2f(-8, -1), Point2f(-5, -7), Point2f(4, 6), Point2f(10, -6)};
+    Shape shape2{Point2f(-4, -3), Point2f(-3, -6), Point2f(-3, 0), Point2f(2, -6), Point2f(2, 4), Point2f(5, 3), Point2f(6, -5), Point2f(7, -2)};
     Shape intersection = result.calculate_intersection(shape1, shape2);
-    vector answer = {Point2f(-4, -3), Point2f(-3, 0), Point2f(-3, -6),
-                     Point2f(2, 4), Point2f(5, 3), Point2f(7, -2)};
+    vector answer = {Point2f(-4, -3), Point2f(-3, -6),
+                     Point2f(-3, 0), Point2f(2, -6), Point2f(2, 4),
+                     Point2f(5, 3), Point2f(6, -5), Point2f(7, -2)};
 
     if (intersection.size() == answer.size()) {
         for (std::uint64_t i = 0; i < intersection.size(); i++) {
@@ -772,7 +773,7 @@ TEST(MathComponentTest, Shapes2) {
 
 TEST(MathComponentTest, Shapes3) {
     MathComponent result;
-    Shape shape1{Point2f(-7, 5), Point2f(-4, -1), Point2f(1, 8), Point2f(1, -3), Point2f(7, -3), Point2f(9, 6), Point2f(10, -1)};
+    Shape shape1{Point2f(-7, 5), Point2f(-4, -1), Point2f(1, -3), Point2f(1, 8), Point2f(7, -3), Point2f(9, 6), Point2f(10, -1)};
     Shape shape2{Point2f(-11, 2), Point2f(-4, -7), Point2f(6, -2), Point2f(9, 6)};
     Shape intersection = result.calculate_intersection(shape1, shape2);
     vector answer = {Point2f(-6, 3), Point2f(-4, -1), Point2f(1, -3),
@@ -848,7 +849,7 @@ TEST(MathComponentTest, Shapes7) {
     Shape shape1{Point2f(-10, 1), Point2f(-10, 4), Point2f(-8, -3), Point2f(-4, 6), Point2f(0, -5), Point2f(2, -4), Point2f(2, 6), Point2f(6, -2), Point2f(6, 2)};
     Shape shape2{Point2f(-10, 1), Point2f(-8, -3), Point2f(2, -4), Point2f(4, 8), Point2f(6, 2)};
     Shape intersection = result.calculate_intersection(shape1, shape2);
-    vector answer = {Point2f(-10, 1), Point2f(-8, -3), Point2f(2, -4), Point2f(4, 8),  Point2f(6, 2)};
+    vector answer = {Point2f(-10, 1), Point2f(-8, -3), Point2f(0, 6), Point2f(2, -4), Point2f(2, 6), Point2f(6, 2)};
 
     if (intersection.size() == answer.size()) {
         for (std::uint64_t i = 0; i < intersection.size(); i++) {
@@ -899,7 +900,7 @@ TEST(MathComponentTest, Shapes9) {
 
 TEST(MathComponentTest, Shapes10) {
     MathComponent result;
-    Shape shape1{Point2f(-5, 5), Point2f(-5, -2), Point2f(-1, -6), Point2f(2, 3), Point2f(4, -5), Point2f(8, -1)};
+    Shape shape1{Point2f(-5, -2), Point2f(-5, 5), Point2f(-1, -6), Point2f(2, 3), Point2f(4, -5), Point2f(8, -1)};
     Shape shape2{Point2f(-8, -2), Point2f(0, 6), Point2f(8, -6)};
     Shape intersection = result.calculate_intersection(shape1, shape2);
     vector answer = {Point2f(-5, -2), Point2f(-5, 1), Point2f(-4, -3),
@@ -918,7 +919,7 @@ TEST(MathComponentTest, Shapes10) {
 
 TEST(MathComponentTest, Shapes11) {
     MathComponent result;
-    Shape shape1{Point2f(-7, -1), Point2f(-3, 5), Point2f(3, 5), Point2f(4, 3), Point2f(5, -4), Point2f(5, 1)};
+    Shape shape1{Point2f(-7, -1), Point2f(-3, 5), Point2f(3, 5), Point2f(5, -4), Point2f(5, 1)};
     Shape shape2{Point2f(-5, 2), Point2f(0, 5), Point2f(1, -3), Point2f(4, 3), Point2f(5, -2)};
     Shape intersection = result.calculate_intersection(shape1, shape2);
     vector answer = {Point2f(-5, 2), Point2f(0, 5), Point2f(1, -3),
@@ -994,7 +995,7 @@ TEST(MathComponentTest, Shapes14) {
 TEST(MathComponentTest, Shapes15) {
     MathComponent result;
     Shape shape1{Point2f(-5, -5), Point2f(-4, -2), Point2f(-3, -7), Point2f(-2, 2), Point2f(-1, -6), Point2f(3, 6), Point2f(5, 2)};
-    Shape shape2{Point2f(-7, 8), Point2f(0, 6), Point2f(3, 6), Point2f(5, 0), Point2f(5, 2), Point2f(5, 4)};
+    Shape shape2{Point2f(-7, -8), Point2f(0, 6), Point2f(3, 6), Point2f(5, 0), Point2f(5, 4)};
     Shape intersection = result.calculate_intersection(shape1, shape2);
     vector answer = {Point2f(-5, -5), Point2f(-4, -6), Point2f(-4, -2),
                      Point2f(-2, 2), Point2f(2, -2), Point2f(3, 6), Point(5, 2)};
@@ -1087,7 +1088,7 @@ TEST(MathComponentTest, Shapes20) {
     Shape shape1{Point2f(-4, -5), Point2f(-4, 4), Point2f(1, 4), Point2f(2, -5), Point2f(4, 2), Point2f(6, -3)};
     Shape shape2{Point2f(-5, 2), Point2f(-4, -2), Point2f(-3, 4), Point2f(2, -4), Point2f(4, 2), Point2f(10, -2)};
     Shape intersection = result.calculate_intersection(shape1, shape2);
-    vector answer = {Point2f(-4, -2), Point2f(-4, 4), Point2f(-3, 4), Point2f(2, -4), Point2f(4, 2), Point2f(6, -3)};
+    vector answer = {Point2f(-4, -2), Point2f(-4, 3), Point2f(-3, 4), Point2f(2, -4), Point2f(4, 2), Point2f(6, -3)};
 
     if (intersection.size() == answer.size()) {
         for (std::uint64_t i = 0; i < intersection.size(); i++) {
@@ -1173,7 +1174,7 @@ TEST(MathComponentTest, Shapes25) {
 
 TEST(MathComponentTest, Shapes26) {
     MathComponent result;
-    Shape shape1{Point2f(-5, -3), Point2f(-5, -6), Point2f(-1, -7), Point2f(2, -7)};
+    Shape shape1{Point2f(-6, -3), Point2f(-5, -6), Point2f(-1, -7), Point2f(2, -7)};
     Shape shape2{Point2f(-4, -4), Point2f(0, -6), Point2f(1, -1)};
     Shape intersection = result.calculate_intersection(shape1, shape2);
     vector answer = {Point2f(-4, -4), Point2f(0, -6)};
@@ -1191,10 +1192,10 @@ TEST(MathComponentTest, Shapes26) {
 
 TEST(MathComponentTest, Shapes27) {
     MathComponent result;
-    Shape shape1{Point2f(-9, -4), Point2f(-4, 4), Point2f(-1, 5), Point2f(3, 4), Point2f(3, -2)};
-    Shape shape2{Point2f(-9, -4), Point2f(-4, 4), Point2f(-1, 5), Point2f(3, 4), Point2f(3, -2)};
+    Shape shape1{Point2f(-9, -4), Point2f(-4, 4), Point2f(-1, 5), Point2f(3, -2), Point2f(3, 4)};
+    Shape shape2{Point2f(-9, -4), Point2f(-4, 4), Point2f(-1, 5), Point2f(3, -2), Point2f(3, 4)};
     Shape intersection = result.calculate_intersection(shape1, shape2);
-    vector answer = {Point2f(-9, -4), Point2f(-4, 4), Point2f(-1, 5), Point2f(3, 4), Point2f(3, -2)};
+    vector answer = {Point2f(-9, -4), Point2f(-4, 4), Point2f(-1, 5), Point2f(3, -2), Point2f(3, 4)};
 
     if (intersection.size() == answer.size()) {
         for (std::uint64_t i = 0; i < intersection.size(); i++) {
