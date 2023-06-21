@@ -25,9 +25,6 @@ jobs:
       - name: ensure make installed
         run: make --version
 
-      - name: finding make
-        run: Get-ChildItem -Path "C:\" -Recurse -Filter "make.exe" -ErrorAction SilentlyContinue
-
       - name: Setup
         run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCI=ON
 
