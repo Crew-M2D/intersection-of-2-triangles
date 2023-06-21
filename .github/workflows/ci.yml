@@ -1,0 +1,55 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      
+      - name: print path
+        run: $env:path
+
+      - name: print make path
+        run: where make
+
+      - name: ensure clang installed
+        run: clang++ --version
+
+      - name: ensure make installed
+        run: make --version
+
+      - name: Setup
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCI=ON
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Test
+        run: cd build/tests && ctest
+
+      - name: Upload Artefacts
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: build
+          path: build
+
+  release:
+    runs-on: windows-latest
+    needs: [build-and-test]
+    if: ${{ github.ref_type == 'tag' }}
+    steps:
+      - name: Download package for Linux
+        uses: actions/download-artifact@v2
+        with:
+          name: build
+      - uses: softprops/action-gh-release@v1
+        with:
+          files: '*.exe'
