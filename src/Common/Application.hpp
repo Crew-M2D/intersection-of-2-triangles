@@ -1,6 +1,6 @@
 #pragma once
 
-// #include <GLFW/glfw3.h>
+#include <GLFW/glfw3.h>
 
 #include <algorithm>
 #include <array>
@@ -8,6 +8,10 @@
 #include <initializer_list>
 #include <stdexcept>
 #include <vector>
+
+// размеры окна
+const unsigned int SCR_WIDTH = 800;
+const unsigned int SCR_HEIGHT = 800;
 
 // Структура точки
 
@@ -18,6 +22,8 @@ struct Point2f {
     Point2f() = default;
 
     Point2f(float x_value, float y_value);
+
+    ~Point2f() = default;
 };
 
 using Point = Point2f;
@@ -25,9 +31,6 @@ using Point = Point2f;
 // Класс фигуры
 
 class Shape {
-private:
-    std::vector<Point> shape_coords;
-
 public:
     Shape() = default;
 
@@ -39,6 +42,8 @@ public:
 
     // добавление новой точки в конец
     void add(Point new_point);
+
+    void del_last();
 
     // сортировка
     void sort();
@@ -54,14 +59,19 @@ public:
     [[nodiscard]] auto get_min_x() const -> float;
     [[nodiscard]] auto get_max_y() const -> float;
     [[nodiscard]] auto get_min_y() const -> float;
+
+private:
+    std::vector<Point> shape_coords;
 };
 
 class GlobalStorage {
 public:
-    auto get_polygon_1() -> const Shape&;
+    [[nodiscard]] auto get_polygon_1() const -> const Shape&;
+    auto get_polygon_1() -> Shape&;
     void set_polygon_1(const Shape& polygon_1_values);
 
-    auto get_polygon_2() -> const Shape&;
+    [[nodiscard]] auto get_polygon_2() const -> const Shape&;
+    auto get_polygon_2() -> Shape&;
     void set_polygon_2(const Shape& polygon_2_values);
 
     auto get_intersection() -> const Shape&;
@@ -70,22 +80,32 @@ public:
     auto get_ratio() -> float;
     void set_ratio(float ratio_value);
 
-    // auto get_window() -> GLFWwindow*;
-    // void set_window(GLFWwindow* window);
+    void create_window();
+
+    auto get_window() -> GLFWwindow*;
+
+    void update_window();
 
 private:
-    Shape polygon_1;
-    Shape polygon_2;
+    Shape polygon_1 = {Point(-5.F, 0.F), Point(0.F, 5.F), Point(5.F, 0.F)};
+    Shape polygon_2 = {Point(0.F, 0.F), Point(5.F, 5.F), Point(10.F, 0.F)};
 
     Shape intersection;
 
     float ratio = 1.0F;
 
-    // GLFWwindow* window;
+    GLFWwindow* window;
 };
 
 extern GlobalStorage global_storage;
 
+// Переопределяем только тот метод, который пишем
+// on_register - функция, которая вызывается
+// единожды при запуске
+// оn_input_proccess() - запись
+// координат on_update() - алгоритм нахождения пересечения
+// on_render() - рисуем пересечение и треугольники
+// on_finish() - удаляем объекты и т.п.
 class IComponent {
 public:
     virtual void on_update() = 0;
@@ -99,6 +119,8 @@ class Application {
     std::vector<IComponent*> components;
 
 public:
+    Application();
+
     void register_component(IComponent& component);
 
     void run();
