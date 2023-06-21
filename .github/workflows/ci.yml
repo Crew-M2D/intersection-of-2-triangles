@@ -26,7 +26,7 @@ jobs:
         run: make --version
 
       - name: finding make
-        run: ls C:\Program Files\Git\mingw64\bin
+        run: ls 'C:\Program Files\Git\mingw64\bin'
 
       - name: Setup
         run: cmake -S . -B build -G"MinGW Makefiles" -D"CMAKE_MAKE_PROGRAM:PATH=C:\Program Files\Git\mingw64\bin\make"
