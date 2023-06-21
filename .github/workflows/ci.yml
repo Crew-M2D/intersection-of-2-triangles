@@ -1,0 +1,54 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: print envs
+        run: SET
+      
+      - name: print path
+        run: echo %PATH%
+
+      - name: ensure clang installed
+        run: clang++ --version
+
+      - name: ensure make installed
+        run: make --version
+
+      - name: Setup
+        run: cmake -S . -B build -G"MinGW Makefiles" -D"CMAKE_MAKE_PROGRAM:PATH=C:\Program Files (x86)\GnuWin32\bin\make"
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Test
+        run: cd build/tests && ctest
+
+      - name: Upload Artefacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build
+          path: build
+
+  release:
+    runs-on: windows-latest
+    needs: [build-and-test]
+    if: ${{ github.ref_type == 'tag' }}
+    steps:
+      - name: Download package for Linux
+        uses: actions/download-artifact@v2
+        with:
+          name: build
+      - uses: softprops/action-gh-release@v1
+        with:
+          files: '*.exe'
