@@ -53,6 +53,6 @@ jobs:
       - uses: softprops/action-gh-release@v1
         with:
           files: |
-           './build-windows-latest-x64/**/Entrypoint.exe'
-           './build-windows-latest-x64/**/Test.exe'
+           './**/Entrypoint.exe'
+           './**/Test.exe'
           token: ${{ secrets.SUPER_SECRET_TOKEN }}
