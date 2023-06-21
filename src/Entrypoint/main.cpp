@@ -1,26 +1,29 @@
 #include <Application.hpp>
 #include <GraphicsComponent.hpp>
+#include <GraphicsInputComponent.hpp>
 #include <InputComponent.hpp>
 #include <MathComponent.hpp>
 #include <iostream>
 
-int main() {
-    // НЕ ТРОГАТЬ КОММЕНТАРИИ
-    // std::cout << "Entrypoint run" << std::endl;
-    // Application app;
-    // app.run();
-    // app.register_component(InputComponent());
-    // app.register_component(MathComponent());
-    // GraphicsComponent g;
-    // g.run();
-    // как сделаю графику все поправлю и все сделаю
+auto main() -> int {
+    std::cout << "main" << std::endl;
+    Application app;
+    std::cout << "App was created" << std::endl;
 
-    InputComponent input_output;
     GraphicsComponent graphics_component;
-    MathComponent math;
-    input_output.on_input_process();
-    math.on_update();
-    input_output.on_render();
-    graphics_component.on_render();
+    GraphicsInputComponent input_component;
+    MathComponent math_component;
+
+    std::cout << "Before register" << std::endl;
+
+    app.register_component(input_component);
+    std::cout << "Input_component was registered" << std::endl;
+    app.register_component(math_component);
+    std::cout << "Math_component was registered" << std::endl;
+    app.register_component(graphics_component);
+    std::cout << "Graphics_component was registered" << std::endl;
+
+    app.run();
+
     return 0;
 }

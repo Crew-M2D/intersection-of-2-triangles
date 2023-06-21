@@ -2,13 +2,6 @@
 
 #include <Application.hpp>
 
-// Переопределяем только тот метод, который пишем
-// on_register - функция, которая вызывается
-// единожды при запуске
-// оn_input_proccess() - запись
-// координат on_update() - алгоритм нахождения пересечения
-// on_render() - рисуем пересечение и треугольники
-
 class MathComponent : public IComponent {
 private:
     auto calculate_ratio(const Shape& polygon_1, const Shape& polygon_2) -> float;

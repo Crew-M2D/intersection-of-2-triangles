@@ -10,7 +10,7 @@ public:
 
     void on_render() override;
 
-    void on_register() override {}
+    void on_register() override;
 
-    void on_finish() override {}
+    void on_finish() override;
 };
