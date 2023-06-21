@@ -50,3 +50,4 @@ jobs:
         with:
           files: './**/*.exe'
           token: ${{ secrets.SUPER_SECRET_TOKEN }}
+
