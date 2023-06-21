@@ -29,7 +29,7 @@ jobs:
         run: Get-ChildItem -Path "C:\" -Recurse -Filter "make.exe" -ErrorAction SilentlyContinue
 
       - name: Setup
-        run: cmake -S . -B build -G"MinGW Makefiles" -D"CMAKE_MAKE_PROGRAM:PATH=C:\Program Files\Git\mingw64\bin\make"
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCI=ON
 
       - name: Build
         run: cmake --build build
