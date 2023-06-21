@@ -17,6 +17,7 @@ target_link_libraries(${TARGET} PUBLIC
   Common
   glfw
   imgui
+  glad
 )
 
 set_property(TARGET ${TARGET} PROPERTY FOLDER "Input")

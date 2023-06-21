@@ -9,51 +9,62 @@
 
 #include "Application.hpp"
 
-
 // функция для определения положения точки относительно вектора
-int orientation(Point a, Point b, Point c) {
-    int val = (b.y - a.y) * (c.x - b.x) - (b.x - a.x) * (c.y - b.y);
-    if (val == 0) return 0; // точки на одной прямой
-    return (val > 0) ? 1 : 2; // по часовой или против часовой стрелки
+auto orientation(Point a, Point b, Point c) -> int {
+    int val =
+        static_cast<int>((b.y - a.y) * (c.x - b.x) - (b.x - a.x) * (c.y - b.y));
+    if (val == 0) {
+        return 0;  // точки на одной прямой
+    }
+    return (val > 0) ? 1 : 2;  // по часовой или против часовой стрелки
 }
 
 // функция для построения выпуклой оболочки
-void convexHull(Shape &points) {
-
+void convexHull(Shape& points) {
     // создаем вектора для вершин верхней и нижней оболочек
-    std::vector<Point> hull_up, hull_down;
+    std::vector<Point> hull_up;
+    std::vector<Point> hull_down;
 
     // сортируем точки по x-координате
     points.sort();
 
     // построение верхней оболочки
-    for (int i = 0; i < points.size(); i++) {
-        // пока массив храним точки больше 2 и точка с конца ранее стоящей точки относительно текущей не вращается по часовой стрелке
-        while (hull_up.size() > 1 && orientation(hull_up[hull_up.size() - 2], hull_up[hull_up.size() - 1], points[i]) != 2)
+    for (std::uint64_t i = 0; i < points.size(); i++) {
+        // пока массив храним точки больше 2 и точка с конца ранее стоящей точки
+        // относительно текущей не вращается по часовой стрелке
+        while (hull_up.size() > 1 &&
+               orientation(hull_up[hull_up.size() - 2],
+                           hull_up[hull_up.size() - 1], points[i]) != 2) {
             hull_up.pop_back();
+        }
         hull_up.push_back(points[i]);
     }
 
     // построение нижней оболочки
-    for (int i = points.size() - 1; i >= 0; i--) {
-        // пока массив храним точки больше 2 и точка с конца ранее стоящей точки относительно текущей не вращается по часовой стрелке
-        while (hull_down.size() > 1 && orientation(hull_down[hull_down.size() - 2], hull_down[hull_down.size() - 1], points[i]) != 2)
+    for (std::ptrdiff_t i = static_cast<std::ptrdiff_t>(points.size()) - 1;
+         i >= 0; i--) {
+        // пока массив храним точки больше 2 и точка с конца ранее стоящей
+        // точки относительно текущей не вращается по часовой стрелке
+        auto& cur_point = points[static_cast<std::uint64_t>(i)];
+        while (hull_down.size() > 1 &&
+               orientation(hull_down[hull_down.size() - 2],
+                           hull_down[hull_down.size() - 1], cur_point) != 2) {
             hull_down.pop_back();
-        hull_down.push_back(points[i]);
+        }
+        hull_down.push_back(cur_point);
     }
 
+    // FIXME
     // объединяем две оболочки
-    int j = 0;
-    for (int i = 0; i < hull_up.size(); i++)
-    {
+    std::uint64_t j = 0;
+    for (std::uint64_t i = 0; i < hull_up.size(); i++) {
         points[i].x = hull_up[i].x;
         points[i].y = hull_up[i].y;
         ++j;
     }
-    for (int i = 1; i < hull_down.size() - 1; i++)
-    {
-        points[i+j-1].x = hull_down[i].x;
-        points[i+j-1].y = hull_down[i].y;
+    for (std::uint64_t i = 1; i < hull_down.size() - 1; i++) {
+        points[i + j - 1].x = hull_down[i].x;
+        points[i + j - 1].y = hull_down[i].y;
     }
 }
 auto get_vector_coords(const Point& point_1, const Point& point_2) -> Point {
@@ -65,39 +76,36 @@ auto get_vector_coords(const Point& point_1, const Point& point_2) -> Point {
 
 // Функция проверяет принадлежит ли точка треугольнику
 auto point_inside_shape(const Shape& polygon, const Point& point_to_check)
--> bool {
+    -> bool {
     // Векторный способ
 
     // Вычислеям координаты векторов всех сторон треугольника
     Shape vec;
-    for (int i = 0;i < polygon.size();++i)
-    {
-        vec.add(get_vector_coords(polygon[i], polygon[(i + 1) % polygon.size()]));
+    for (std::uint64_t i = 0; i < polygon.size(); ++i) {
+        vec.add(
+            get_vector_coords(polygon[i], polygon[(i + 1) % polygon.size()]));
     }
     // Вычисляем координаты векторов от точек треугольника до проверяемой точки
     Shape vec_check;
-    for (int i = 0;i < vec.size();++i)
-    {
+    for (std::uint64_t i = 0; i < vec.size(); ++i) {
         vec_check.add(get_vector_coords(polygon[i], point_to_check));
     }
     // Вычисляем знаки смешанных произведений векторов
     std::vector<float> mixed_product;
-    for (int i = 0;i < vec_check.size();++i)
-    {
-        mixed_product.push_back((vec[i].x * vec_check[i].y) - (vec[i].y * vec_check[i].x));
+    mixed_product.reserve(vec_check.size());
+    for (std::uint64_t i = 0; i < vec_check.size(); ++i) {
+        mixed_product.push_back((vec[i].x * vec_check[i].y) -
+                                (vec[i].y * vec_check[i].x));
     }
     // Если знаки смешанных произведений одинаковы, то точка принадлежит
     // треугольнику
     bool indicator = true;
     bool check_sign = false;
-    if (mixed_product[0] > 0)
-    {
+    if (mixed_product[0] > 0) {
         check_sign = true;
     }
-    for (int i = 0;i < vec_check.size();++i)
-    {
-        if ((mixed_product[i] > 0) != check_sign)
-        {
+    for (std::uint64_t i = 0; i < vec_check.size(); ++i) {
+        if ((mixed_product[i] > 0) != check_sign) {
             indicator = false;
         }
     }
@@ -110,9 +118,8 @@ auto value_between_others(float value, float other1, float other2) -> bool {
 }
 
 // проверка, что полигоны одинаковые
-auto polygons_are_same(const Shape& polygon_1, const Shape& polygon_2)
-    -> bool {
-    if (polygon_1.size()!=polygon_2.size()) {
+auto polygons_are_same(const Shape& polygon_1, const Shape& polygon_2) -> bool {
+    if (polygon_1.size() != polygon_2.size()) {
         return false;
     }
     for (std::uint64_t i = 0; i < polygon_1.size(); i++) {
@@ -169,7 +176,11 @@ auto find_intersection_point_of_lines(const Point& p_A, const Point& p_B,
 auto MathComponent::calculate_intersection(Shape polygon_1, Shape polygon_2)
     -> Shape {
     Shape intersection_points;
-    convexHull(polygon_1);
+    try {
+        convexHull(polygon_1);
+    } catch (const std::exception& e) {
+        std::cerr << "in convex hull" << e.what() << std::endl;
+    }
     convexHull(polygon_2);
     // сортируем фигуры
     // если треугольники одинаковые, то вернем в качестве пересечения просто
@@ -187,33 +198,30 @@ auto MathComponent::calculate_intersection(Shape polygon_1, Shape polygon_2)
             Point current_p_tr_2 = polygon_2[j];
             Point neighbor_p_tr_2 = polygon_2[(j + 1) % polygon_2.size()];
             if (!two_segments_on_one_line(current_p_tr_1, current_p_tr_2,
-                neighbor_p_tr_1, neighbor_p_tr_2)) {
+                                          neighbor_p_tr_1, neighbor_p_tr_2)) {
                 Point new_intersection_point = find_intersection_point_of_lines(
                     current_p_tr_1, neighbor_p_tr_1, current_p_tr_2,
                     neighbor_p_tr_2);
                 if (!value_between_others(new_intersection_point.x,
-                    current_p_tr_1.x,
-                    neighbor_p_tr_1.x)) {
+                                          current_p_tr_1.x,
+                                          neighbor_p_tr_1.x)) {
                     indicator = false;
-                }
-                else if (!value_between_others(new_intersection_point.y,
-                    current_p_tr_1.y,
-                    neighbor_p_tr_1.y)) {
+                } else if (!value_between_others(new_intersection_point.y,
+                                                 current_p_tr_1.y,
+                                                 neighbor_p_tr_1.y)) {
                     indicator = false;
-                }
-                else if (!value_between_others(new_intersection_point.x,
-                    current_p_tr_2.x,
-                    neighbor_p_tr_2.x)) {
+                } else if (!value_between_others(new_intersection_point.x,
+                                                 current_p_tr_2.x,
+                                                 neighbor_p_tr_2.x)) {
                     indicator = false;
-                }
-                else if (!value_between_others(new_intersection_point.y,
-                    current_p_tr_2.y,
-                    neighbor_p_tr_2.y)) {
+                } else if (!value_between_others(new_intersection_point.y,
+                                                 current_p_tr_2.y,
+                                                 neighbor_p_tr_2.y)) {
                     indicator = false;
                 }
                 if (indicator) {
                     if (!point_already_recorded(intersection_points,
-                        new_intersection_point)) {
+                                                new_intersection_point)) {
                         intersection_points.add(new_intersection_point);
                     }
                 }
@@ -242,8 +250,8 @@ auto MathComponent::calculate_intersection(Shape polygon_1, Shape polygon_2)
     return intersection_points;
 }
 
-auto MathComponent::calculate_ratio(const Shape& polygon_1, const Shape& polygon_2)
-    -> float {
+auto MathComponent::calculate_ratio(const Shape& polygon_1,
+                                    const Shape& polygon_2) -> float {
     // вычисление максимальных и минимальных x и y
     float max_x = std::max(polygon_1.get_max_x(), polygon_2.get_max_x());
     float min_x = std::max(polygon_1.get_min_x(), polygon_2.get_min_x());

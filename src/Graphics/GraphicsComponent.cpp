@@ -21,10 +21,6 @@
 #include "Application.hpp"
 #include "GraphicsComponent.hpp"
 
-// размеры окна
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 800;
-
 // программный шейдерный объект
 GLuint shaderProgram;
 
@@ -46,16 +42,35 @@ const char* fragmentShaderSource =
     "   FragColor = color;\n"
     "}\n\0";
 
+auto find_maximum_value(const Shape& polygon_1, const Shape& polygon_2)
+    -> float {
+    return std::max({polygon_1.get_max_x(), polygon_1.get_max_y(),
+                     polygon_2.get_max_x(), polygon_2.get_max_y()});
+}
+
+auto find_minimum_value(const Shape& polygon_1, const Shape& polygon_2)
+    -> float {
+    return std::min({polygon_1.get_min_x(), polygon_1.get_min_y(),
+                     polygon_2.get_min_x(), polygon_2.get_min_y()});
+}
+
 class Polygon {
 private:
     unsigned int VAO;  // объект Vertex Array
     unsigned int VBO;  // объекты буфера вершин
     std::array<float, 4> color;
+
+    // полигон состоит из всех возможных треугольников
     std::vector<float> vertices = {};
 
 public:
-    // если рисуем пол
-    explicit Polygon(const Shape& shape) {
+    // конструктор по умолчанию
+    Polygon() = default;
+    // деструктор по умолчанию
+    ~Polygon() = default;
+    //
+    void update_polygon(const Shape& shape) {
+        vertices.clear();
         // заполнение вектора вершинами треугольника
         for (std::atomic_uint64_t i = 0; i < shape.size(); i++) {
             vertices.push_back(shape[i].x);
@@ -65,7 +80,7 @@ public:
     }
     void scaling_of_vertices(float max_value, float min_value) {
         float ratio = global_storage.get_ratio();
-        // масштабируем координаты треугольниуов
+        // масштабируем координаты
         for (std::uint64_t i = 0; i < vertices.size() / 3; i++) {
             vertices[i * 3] =
                 (vertices[i * 3] - (max_value + min_value) / 2.0F) * ratio;
@@ -119,43 +134,12 @@ public:
     }
 };
 
-auto find_max_value(const Shape& polygon_1, const Shape& polygon_2) -> float {
-    return std::max({polygon_1.get_max_x(), polygon_1.get_max_y(),
-                     polygon_2.get_max_x(), polygon_2.get_max_y()});
-}
+// два полигона и их пересечение
+Polygon polygon_1;
+Polygon polygon_2;
+Polygon intersection;
 
-auto find_min_value(const Shape& polygon_1, const Shape& polygon_2) -> float {
-    return std::min({polygon_1.get_min_x(), polygon_1.get_min_y(),
-                     polygon_2.get_min_x(), polygon_2.get_min_y()});
-}
-
-void GraphicsComponent::on_render() {
-    // ИНЦИЛИЗАЦИЯ И НАСТРОЙКА GLFW
-    glfwInit();
-    // используем версию 3.3
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    // используем CORE profile = используем только современные функции
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-    // -------------------------------------------------------
-    // СОЗДАНИЕ ОКНА GLFW
-    GLFWwindow* window = glfwCreateWindow(
-        SCR_WIDTH, SCR_HEIGHT, "Intersection of 2 triangles", nullptr, nullptr);
-    // ошибка если окно не получилось создать
-    if (window == nullptr) {
-        glfwTerminate();
-        throw std::runtime_error("Failed to create GLFW window");
-    }
-    // добавляем окно в текущий контекст
-    glfwMakeContextCurrent(window);
-
-    // -------------------------------------------------------
-    // НАСТРОЙКА OpenGl
-    gladLoadGL();
-
-    glViewport(0, 0, 800, 800);
-
+void GraphicsComponent::on_register() {
     // -------------------------------------------------------
     // ВЕРШИННЫЙ И ФРАГМЕНТНЫЙ ШЕЙДЕРНЫЕ ОБЪЕКТЫ
     // вершинный
@@ -187,26 +171,6 @@ void GraphicsComponent::on_render() {
     glDeleteShader(fragmentShader);
 
     // -------------------------------------------------------
-    // ПОЛИГОНЫ ДЛЯ ОТРИСОВКИ
-
-    // получаем треугольники и пересечение из глобального хранилища
-    Shape polygon_1_coords = global_storage.get_polygon_1();
-    Shape polygon_2_coords = global_storage.get_polygon_2();
-    Shape intersection_coords = global_storage.get_intersection();
-
-    // создаем полигоны
-    Polygon polygon_1(polygon_1_coords);
-    Polygon polygon_2(polygon_2_coords);
-    Polygon intersection(intersection_coords);
-
-    // не забываем отмасштабировать их
-    float max_value = find_max_value(polygon_1_coords, polygon_2_coords);
-    float min_value = find_min_value(polygon_1_coords, polygon_2_coords);
-    polygon_1.scaling_of_vertices(max_value, min_value);
-    polygon_2.scaling_of_vertices(max_value, min_value);
-    intersection.scaling_of_vertices(max_value, min_value);
-
-    // -------------------------------------------------------
     // НАСТРОЙКА КОНТЕЙНЕРОВ ДЛЯ VAO и VBO
     polygon_1.setup_VAO_VBO();
     polygon_2.setup_VAO_VBO();
@@ -214,75 +178,74 @@ void GraphicsComponent::on_render() {
 
     // -------------------------------------------------------
     // ЦВЕТА
-    polygon_1.set_color(1.0F, 1.0F, 0.0F, 0.25F);     // желтый
-    polygon_2.set_color(0.0F, 1.0F, 1.0F, 0.25F);     // голубой
+    polygon_1.set_color(1.0F, 1.0F, 0.0F, 0.25F);      // желтый
+    polygon_2.set_color(0.0F, 1.0F, 1.0F, 0.25F);      // голубой
     intersection.set_color(0.0F, 1.0F, 0.24F, 0.25F);  // зеленый
+}
+
+void GraphicsComponent::on_render() {
+    std::cout << "graphics on render" << std::endl;
+    // -------------------------------------------------------
+    // ОБНОВЛЯЕМ ПОЛИГОНЫ ДЛЯ ОТРИСОВКИ
+
+    // получаем полигоны и пересечение из глобального хранилища
+    Shape polygon_1_coords = global_storage.get_polygon_1();
+    Shape polygon_2_coords = global_storage.get_polygon_2();
+    Shape intersection_coords = global_storage.get_intersection();
+
+    // обновляем полигоны и пересечение
+    polygon_1.update_polygon(polygon_1_coords);
+    polygon_2.update_polygon(polygon_2_coords);
+    intersection.update_polygon(intersection_coords);
+
+    // не забываем отмасштабировать их
+    float max_value = find_maximum_value(polygon_1_coords, polygon_2_coords);
+    float min_value = find_minimum_value(polygon_1_coords, polygon_2_coords);
+    polygon_1.scaling_of_vertices(max_value, min_value);
+    polygon_2.scaling_of_vertices(max_value, min_value);
+    intersection.scaling_of_vertices(max_value, min_value);
 
     // -------------------------------------------------------
-    // ИНЦИЛИЗИРУЕМ ImGui
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO();
-    (void)io;
-    ImGui::StyleColorsDark();
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL3_Init("#version 330");
 
     glUseProgram(shaderProgram);
 
-    // -------------------------------------------------------
-    // ЦИКЛ РЕНДЕРИНГА
-    while (glfwWindowShouldClose(window) == 0) {
-        // цвет фона
-        glClearColor(0.5F, 0.5F, 0.5F, 1.F);
-        // очистка прошлого буфера и присвоение ему нового цвета
-        glClear(GL_COLOR_BUFFER_BIT);
+    polygon_1.draw();
+    std::cout << "polygon1 draw" << std::endl;
+    polygon_2.draw();
+    std::cout << "polygon2 draw" << std::endl;
+    intersection.draw();
+    std::cout << "intersection draw" << std::endl;
+    intersection.draw_points();
 
-        // сообщаем ImGui что начинается новый кадр
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
-
-        glUseProgram(shaderProgram);
-
-        polygon_1.draw();
-        polygon_2.draw();
-        intersection.draw();
-        intersection.draw_points();
-
-        // ОКНО С ИНФОРМАЦИЕЙ О ПЕРЕСЕЧЕНИИ
-        ImGui::Begin("Intersection points");
-        // текст
-        if (intersection_coords.size() == 0) {
-            ImGui::Text("There are no points of intersection:");
-        } else {
-            ImGui::Text("There are %d points of intersection:\n",
-                        static_cast<int>(intersection_coords.size()));
-            for (std::uint64_t i = 0; i < intersection_coords.size();
-                 i++) {
-                ImGui::Text("%d point:\n%f %f", static_cast<int>(i + 1),
-                            intersection_coords[i].x, intersection_coords[i].y);
-            }
+    // ОКНО С ИНФОРМАЦИЕЙ О ПЕРЕСЕЧЕНИИ
+    ImGui::Begin("Intersection points");
+    // текст
+    if (intersection_coords.size() == 0) {
+        ImGui::Text("There are no points of intersection:");
+    } else {
+        ImGui::Text("There are %d points of intersection:\n",
+                    static_cast<int>(intersection_coords.size()));
+        for (std::uint64_t i = 0; i < intersection_coords.size(); i++) {
+            ImGui::Text("%d point:\n%f %f", static_cast<int>(i + 1),
+                        intersection_coords[i].x, intersection_coords[i].y);
         }
-        //
-        ImGui::End();
-
-        // РЕНДЕР ЭЛЕМЕНТОВ ImGui
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-        // обновление экрана
-        glfwSwapBuffers(window);
-
-        glfwPollEvents();
     }
-    // -------------------------------------------------------
+    //
+    ImGui::End();
+
+    // РЕНДЕР ЭЛЕМЕНТОВ ImGui
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+    // обновление экрана
+    global_storage.update_window();
+
+    glfwPollEvents();
+}
+
+void GraphicsComponent::on_finish() {
     // УДАЛЯЕМ ВСЕ ОБЪЕКТЫ, ЧТО МЫ СОЗДАЛИ
 
-    // удаляю все экземпляры ImGui
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
     // удаляю созданные вершинные объекты
     polygon_1.delete_VAO_VBO();
     polygon_2.delete_VAO_VBO();
