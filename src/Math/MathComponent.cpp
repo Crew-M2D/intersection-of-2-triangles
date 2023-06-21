@@ -257,7 +257,13 @@ auto MathComponent::calculate_ratio(const Shape& polygon_1,
     float min_x = std::max(polygon_1.get_min_x(), polygon_2.get_min_x());
     float max_y = std::max(polygon_1.get_max_y(), polygon_2.get_max_y());
     float min_y = std::max(polygon_1.get_min_y(), polygon_2.get_min_y());
-    float ratio = 2.0F / (std::max(max_y, max_x) - std::min(min_y, min_x));
+    float diff = (std::max(max_y, max_x) - std::min(min_y, min_x));
+    float ratio;
+    if (diff != 0) {
+        ratio = 2.0F / diff;
+    } else {
+        ratio = global_storage.get_ratio();
+    }
     return ratio;
 }
 
