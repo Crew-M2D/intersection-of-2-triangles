@@ -10,11 +10,7 @@ on:
 
 jobs:
   build-and-test:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [windows-latest]
-        arch: [x64]
+    runs-on: windows-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -26,7 +22,7 @@ jobs:
         run: make --version
 
       - name: Setup
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCI=ON -A ${{ matrix.arch }}
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCI=ON
 
       - name: Build
         run: cmake --build build
@@ -38,7 +34,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v3
         with:
-          name: build-${{ matrix.os }}-${{ matrix.arch }}
+          name: build
           path: build
 
   release:
@@ -46,13 +42,11 @@ jobs:
     if: success() || failure()
     needs: [build-and-test]
     steps:
-      - name: Download packages for Windows x64
+      - name: Download package for Linux
         uses: actions/download-artifact@v2
         with:
-          name: build-windows-latest-x64
+          name: build
       - uses: softprops/action-gh-release@v1
         with:
-          files: |
-           './**/Entrypoint.exe'
-           './**/Test.exe'
+          files: './**/*.exe'
           token: ${{ secrets.SUPER_SECRET_TOKEN }}
