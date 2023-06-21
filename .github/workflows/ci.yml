@@ -14,7 +14,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest]
-        arch: [x64, Win32]
+        arch: [x64]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -50,13 +50,9 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: build-windows-latest-x64
-      - name: Download packages for Windows Win32
-        uses: actions/download-artifact@v2
-        with:
-          name: build-windows-latest-Win32
       - uses: softprops/action-gh-release@v1
         with:
           files: |
-           './build-windows-latest-x64/**' 
-           './build-windows-latest-Win32/**'
+           './build-windows-latest-x64/**/Entrypoint.exe'
+           './build-windows-latest-x64/**/Test.exe'
           token: ${{ secrets.SUPER_SECRET_TOKEN }}
