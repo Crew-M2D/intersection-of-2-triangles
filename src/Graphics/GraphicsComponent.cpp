@@ -12,16 +12,14 @@
 
 #include <algorithm>
 #include <array>
+#include <atomic>
+#include <cstdint>
 #include <iostream>
 #include <stdexcept>
 #include <vector>
 
 #include "Application.hpp"
 #include "GraphicsComponent.hpp"
-
-// размеры окна
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 800;
 
 // программный шейдерный объект
 GLuint shaderProgram;
@@ -44,35 +42,65 @@ const char* fragmentShaderSource =
     "   FragColor = color;\n"
     "}\n\0";
 
+auto find_maximum_value(const Shape& polygon_1, const Shape& polygon_2)
+    -> float {
+    return std::max({polygon_1.get_max_x(), polygon_1.get_max_y(),
+                     polygon_2.get_max_x(), polygon_2.get_max_y()});
+}
+
+auto find_minimum_value(const Shape& polygon_1, const Shape& polygon_2)
+    -> float {
+    return std::min({polygon_1.get_min_x(), polygon_1.get_min_y(),
+                     polygon_2.get_min_x(), polygon_2.get_min_y()});
+}
+
+auto generate_all_triangles(const Shape& shape_points) -> std::vector<Shape> {
+    std::vector<Shape> triangles;
+    auto n = shape_points.size();
+    for (uint64_t i = 0; i < n - 2; i++) {
+        for (uint64_t j = i + 1; j < n - 1; j++) {
+            for (uint64_t k = j + 1; k < n; k++) {
+                Shape new_triangle = {shape_points[i], shape_points[j],
+                                      shape_points[k]};
+                triangles.emplace_back(new_triangle);
+            }
+        }
+    }
+    return triangles;
+}
+
 class Polygon {
 private:
     unsigned int VAO;  // объект Vertex Array
     unsigned int VBO;  // объекты буфера вершин
     std::array<float, 4> color;
+
+    // полигон состоит из всех возможных треугольников
     std::vector<float> vertices = {};
 
 public:
-    // если рисуем треугольник
-    Polygon(const Triangle& triangle) {
+    // конструктор по умолчанию
+    Polygon() = default;
+    // деструктор по умолчанию
+    ~Polygon() = default;
+    //
+    void update_polygon(const Shape& shape) {
+        vertices.clear();
         // заполнение вектора вершинами треугольника
-        for (unsigned long long i = 0; i < 3; i++) {
-            vertices.push_back(triangle[i].x);
-            vertices.push_back(triangle[i].y);
-            vertices.push_back(0.F);
-        }
-    }
-    // если рисуем пересечение
-    Polygon(const Intersection& intersection) {
-        for (unsigned long long i = 0; i < intersection.size(); i++) {
-            vertices.push_back(intersection[i].x);
-            vertices.push_back(intersection[i].y);
-            vertices.push_back(0.F);
+        std::vector<Shape> triangles = generate_all_triangles(shape);
+
+        for (auto& triangle : triangles) {
+            for (uint64_t j = 0; j < 3; j++) {
+                vertices.push_back(triangle[j].x);
+                vertices.push_back(triangle[j].y);
+                vertices.push_back(0.F);
+            }
         }
     }
     void scaling_of_vertices(float max_value, float min_value) {
         float ratio = global_storage.get_ratio();
-        // масштабируем координаты треугольниуов
-        for (unsigned long long i = 0; i < vertices.size() / 3; i++) {
+        // масштабируем координаты
+        for (std::uint64_t i = 0; i < vertices.size() / 3; i++) {
             vertices[i * 3] =
                 (vertices[i * 3] - (max_value + min_value) / 2.0F) * ratio;
             vertices[1 + (i * 3)] =
@@ -88,12 +116,12 @@ public:
 
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
         glBufferData(GL_ARRAY_BUFFER,
-                     static_cast<long long>(vertices.size()) *
-                         static_cast<long long>(sizeof(float)),
+                     static_cast<std::int64_t>(vertices.size()) *
+                         static_cast<std::int64_t>(sizeof(float)),
                      vertices.data(), GL_STATIC_DRAW);
 
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float),
-                              (void*)0);
+                              static_cast<void*>(nullptr));
         glEnableVertexAttribArray(0);
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -110,8 +138,7 @@ public:
         glBindVertexArray(VAO);
         glUniform4f(glGetUniformLocation(shaderProgram, "color"), color[0],
                     color[1], color[2], color[3]);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0,
-                     static_cast<int>(vertices.size() / 3));
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<int>(vertices.size() / 3));
     }
     void draw_points() {
         glBindVertexArray(VAO);
@@ -125,46 +152,25 @@ public:
     }
 };
 
-void GraphicsComponent::on_render() {
-    // ИНЦИЛИЗАЦИЯ И НАСТРОЙКА GLFW
-    glfwInit();
-    // используем версию 3.3
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    // используем CORE profile = используем только современные функции
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+// два полигона и их пересечение
+Polygon polygon_1;
+Polygon polygon_2;
+Polygon intersection;
 
-    // -------------------------------------------------------
-    // СОЗДАНИЕ ОКНА GLFW
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT,
-                                          "Intersection of 2 triangles", 0, 0);
-    // ошибка если окно не получилось создать
-    if (window == NULL) {
-        glfwTerminate();
-        throw std::runtime_error("Failed to create GLFW window");
-    }
-    // добавляем окно в текущий контекст
-    glfwMakeContextCurrent(window);
-
-    // -------------------------------------------------------
-    // НАСТРОЙКА OpenGl
-    gladLoadGL();
-
-    glViewport(0, 0, 800, 800);
-
+void GraphicsComponent::on_register() {
     // -------------------------------------------------------
     // ВЕРШИННЫЙ И ФРАГМЕНТНЫЙ ШЕЙДЕРНЫЕ ОБЪЕКТЫ
     // вершинный
     GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
     // прикрепляем источник вершинного шейдера к объекту вершинного шейдера
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+    glShaderSource(vertexShader, 1, &vertexShaderSource, nullptr);
     // компилируем вершинный шейдер в машинный код
     glCompileShader(vertexShader);
 
     // фрагментный
     GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
     // прикрепляем источник фрагментного шейдера к объекту фрагментного шейдера
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
+    glShaderSource(fragmentShader, 1, &fragmentShaderSource, nullptr);
     // компилируем фрагментный шейдер в машинный код
     glCompileShader(fragmentShader);
 
@@ -183,107 +189,84 @@ void GraphicsComponent::on_render() {
     glDeleteShader(fragmentShader);
 
     // -------------------------------------------------------
-    // ПОЛИГОНЫ ДЛЯ ОТРИСОВКИ
+    // ЦВЕТА
+    polygon_1.set_color(1.0F, 1.0F, 0.0F, 0.25F);      // желтый
+    polygon_2.set_color(0.0F, 1.0F, 1.0F, 0.25F);      // голубой
+    intersection.set_color(0.0F, 1.0F, 0.24F, 0.25F);  // зеленый
+}
 
-    // получаем треугольники и пересечение из глобального хранилища
-    Triangle triangle_1_coords = global_storage.get_triangle_1();
-    Triangle triangle_2_coords = global_storage.get_triangle_2();
-    Intersection intersection_coords = global_storage.get_intersection();
+void GraphicsComponent::on_render() {
+    std::cout << "graphics on render" << std::endl;
+    // -------------------------------------------------------
+    // ОБНОВЛЯЕМ ПОЛИГОНЫ ДЛЯ ОТРИСОВКИ
 
-    // создаем полигоны
-    Polygon triangle_1(triangle_1_coords);
-    Polygon triangle_2(triangle_2_coords);
-    Polygon intersection(intersection_coords);
+    // получаем полигоны и пересечение из глобального хранилища
+    Shape polygon_1_coords = global_storage.get_polygon_1();
+    Shape polygon_2_coords = global_storage.get_polygon_2();
+    Shape intersection_coords = global_storage.get_intersection();
+
+    // обновляем полигоны и пересечение
+    polygon_1.update_polygon(polygon_1_coords);
+    polygon_2.update_polygon(polygon_2_coords);
+    intersection.update_polygon(intersection_coords);
 
     // не забываем отмасштабировать их
-    float max_value = std::max(get_max_x(triangle_1_coords, triangle_2_coords),
-                               get_max_y(triangle_1_coords, triangle_2_coords));
-    float min_value = std::min(get_min_x(triangle_1_coords, triangle_2_coords),
-                               get_min_y(triangle_1_coords, triangle_2_coords));
-    triangle_1.scaling_of_vertices(max_value, min_value);
-    triangle_2.scaling_of_vertices(max_value, min_value);
+    float max_value = find_maximum_value(polygon_1_coords, polygon_2_coords);
+    float min_value = find_minimum_value(polygon_1_coords, polygon_2_coords);
+    polygon_1.scaling_of_vertices(max_value, min_value);
+    polygon_2.scaling_of_vertices(max_value, min_value);
     intersection.scaling_of_vertices(max_value, min_value);
 
     // -------------------------------------------------------
     // НАСТРОЙКА КОНТЕЙНЕРОВ ДЛЯ VAO и VBO
-    triangle_1.setup_VAO_VBO();
-    triangle_2.setup_VAO_VBO();
+    polygon_1.setup_VAO_VBO();
+    polygon_2.setup_VAO_VBO();
     intersection.setup_VAO_VBO();
 
     // -------------------------------------------------------
-    // ЦВЕТА
-    triangle_1.set_color(1.0F, 1.0F, 0.0F, 0.25F);     // желтый
-    triangle_2.set_color(0.0F, 1.0F, 1.0F, 0.25F);     // голубой
-    intersection.set_color(0.0F, 1.0F, 0.24F, 0.25F);  // зеленый
-
-    // -------------------------------------------------------
-    // ИНЦИЛИЗИРУЕМ ImGui
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO();
-    (void)io;
-    ImGui::StyleColorsDark();
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL3_Init("#version 330");
 
     glUseProgram(shaderProgram);
 
-    // -------------------------------------------------------
-    // ЦИКЛ РЕНДЕРИНГА
-    while (!glfwWindowShouldClose(window)) {
-        // цвет фона
-        glClearColor(0.5F, 0.5F, 0.5F, 1.F);
-        // очистка прошлого буфера и присвоение ему нового цвета
-        glClear(GL_COLOR_BUFFER_BIT);
+    polygon_1.draw();
+    std::cout << "polygon1 draw" << std::endl;
+    polygon_2.draw();
+    std::cout << "polygon2 draw" << std::endl;
+    intersection.draw();
+    std::cout << "intersection draw" << std::endl;
+    intersection.draw_points();
 
-        // сообщаем ImGui что начинается новый кадр
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
-
-        glUseProgram(shaderProgram);
-
-        triangle_1.draw();
-        triangle_2.draw();
-        intersection.draw();
-        intersection.draw_points();
-
-        // ОКНО С ИНФОРМАЦИЕЙ О ПЕРЕСЕЧЕНИИ
-        ImGui::Begin("Intersection points");
-        // текст
-        if (intersection_coords.size() == 0) {
-            ImGui::Text("There are no points of intersection:");
-        } else {
-            ImGui::Text("There are %d points of intersection:\n",
-                        static_cast<int>(intersection_coords.size()));
-            for (unsigned long long i = 0; i < intersection_coords.size();
-                 i++) {
-                ImGui::Text("%d point:\n%f %f", static_cast<int>(i+1),
-                            intersection_coords[i].x, intersection_coords[i].y);
-            }
+    // ОКНО С ИНФОРМАЦИЕЙ О ПЕРЕСЕЧЕНИИ
+    ImGui::Begin("Intersection points");
+    // текст
+    if (intersection_coords.size() == 0) {
+        ImGui::Text("There are no points of intersection:");
+    } else {
+        ImGui::Text("There are %d points of intersection:\n",
+                    static_cast<int>(intersection_coords.size()));
+        for (std::uint64_t i = 0; i < intersection_coords.size(); i++) {
+            ImGui::Text("%d point:\n%f %f", static_cast<int>(i + 1),
+                        intersection_coords[i].x, intersection_coords[i].y);
         }
-        //
-        ImGui::End();
-
-        // РЕНДЕР ЭЛЕМЕНТОВ ImGui
-        ImGui::Render();
-		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-        // обновление экрана
-        glfwSwapBuffers(window);
-
-        glfwPollEvents();
     }
-    // -------------------------------------------------------
+    //
+    ImGui::End();
+
+    // РЕНДЕР ЭЛЕМЕНТОВ ImGui
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+    // обновление экрана
+    global_storage.update_window();
+
+    glfwPollEvents();
+}
+
+void GraphicsComponent::on_finish() {
     // УДАЛЯЕМ ВСЕ ОБЪЕКТЫ, ЧТО МЫ СОЗДАЛИ
 
-    // удаляю все экземпляры ImGui
-    ImGui_ImplOpenGL3_Shutdown();
-	ImGui_ImplGlfw_Shutdown();
-	ImGui::DestroyContext();
     // удаляю созданные вершинные объекты
-    triangle_1.delete_VAO_VBO();
-    triangle_2.delete_VAO_VBO();
+    polygon_1.delete_VAO_VBO();
+    polygon_2.delete_VAO_VBO();
     intersection.delete_VAO_VBO();
     // удаляю шейдерную программу
     glDeleteProgram(shaderProgram);
