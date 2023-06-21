@@ -260,10 +260,11 @@ auto MathComponent::calculate_ratio(const Shape& polygon_1,
     float diff = (std::max(max_y, max_x) - std::min(min_y, min_x));
     float ratio;
     if (diff != 0) {
-        ratio = 2.0F / diff;
+        ratio = 1.0F / diff;
     } else {
         ratio = global_storage.get_ratio();
     }
+    std::cout<<ratio<<std::endl;
     return ratio;
 }
 
