@@ -50,14 +50,10 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: build-windows-latest-x64
-      - name: Download packages for Windows x86
+      - name: Download packages for Windows Win32
         uses: actions/download-artifact@v2
         with:
-          name: build-windows-latest-x86
-      - name: Download packages for Linux x64
-        uses: actions/download-artifact@v2
-        with:
-          name: build-ubuntu-latest-x64
+          name: build-windows-latest-Win32
       - uses: softprops/action-gh-release@v1
         with:
           files: |
