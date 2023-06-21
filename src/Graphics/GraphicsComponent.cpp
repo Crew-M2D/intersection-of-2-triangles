@@ -54,6 +54,21 @@ auto find_minimum_value(const Shape& polygon_1, const Shape& polygon_2)
                      polygon_2.get_min_x(), polygon_2.get_min_y()});
 }
 
+auto generate_all_triangles(const Shape& shape_points) -> std::vector<Shape> {
+    std::vector<Shape> triangles;
+    auto n = shape_points.size();
+    for (uint64_t i = 0; i < n - 2; i++) {
+        for (uint64_t j = i + 1; j < n - 1; j++) {
+            for (uint64_t k = j + 1; k < n; k++) {
+                Shape new_triangle = {shape_points[i], shape_points[j],
+                                      shape_points[k]};
+                triangles.emplace_back(new_triangle);
+            }
+        }
+    }
+    return triangles;
+}
+
 class Polygon {
 private:
     unsigned int VAO;  // объект Vertex Array
@@ -72,10 +87,14 @@ public:
     void update_polygon(const Shape& shape) {
         vertices.clear();
         // заполнение вектора вершинами треугольника
-        for (std::atomic_uint64_t i = 0; i < shape.size(); i++) {
-            vertices.push_back(shape[i].x);
-            vertices.push_back(shape[i].y);
-            vertices.push_back(0.F);
+        std::vector<Shape> triangles = generate_all_triangles(shape);
+
+        for (auto& triangle : triangles) {
+            for (uint64_t j = 0; j < 3; j++) {
+                vertices.push_back(triangle[j].x);
+                vertices.push_back(triangle[j].y);
+                vertices.push_back(0.F);
+            }
         }
     }
     void scaling_of_vertices(float max_value, float min_value) {
@@ -119,8 +138,7 @@ public:
         glBindVertexArray(VAO);
         glUniform4f(glGetUniformLocation(shaderProgram, "color"), color[0],
                     color[1], color[2], color[3]);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0,
-                     static_cast<int>(vertices.size() / 3));
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<int>(vertices.size() / 3));
     }
     void draw_points() {
         glBindVertexArray(VAO);
