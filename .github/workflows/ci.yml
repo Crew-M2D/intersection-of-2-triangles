@@ -10,7 +10,11 @@ on:
 
 jobs:
   build-and-test:
-    runs-on: windows-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+        arch: [x64, x86]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -28,7 +32,7 @@ jobs:
         run: make --version
 
       - name: Setup
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCI=ON
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCI=ON -DCMAKE_GENERATOR_PLATFORM=$({{ matrix.arch }})
 
       - name: Build
         run: cmake --build build
@@ -40,7 +44,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v3
         with:
-          name: build
+          name: build-${{ matrix.os }}-${{ matrix.arch }}
           path: build
 
   release:
@@ -48,11 +52,22 @@ jobs:
     if: success() || failure()
     needs: [build-and-test]
     steps:
-      - name: Download package for Linux
+      - name: Download packages for Windows x64
         uses: actions/download-artifact@v2
         with:
-          name: build
+          name: build-windows-latest-x64
+      - name: Download packages for Windows x86
+        uses: actions/download-artifact@v2
+        with:
+          name: build-windows-latest-x86
+      - name: Download packages for Linux x64
+        uses: actions/download-artifact@v2
+        with:
+          name: build-ubuntu-latest-x64
       - uses: softprops/action-gh-release@v1
         with:
-          files: './**/*.exe'
+          files: |
+           './build-windows-latest-x64/**' 
+           './build-windows-latest-x86/**'
+           './build-ubuntu-latest-x64/**'
           token: ${{ secrets.SUPER_SECRET_TOKEN }}
