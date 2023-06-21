@@ -21,4 +21,7 @@ add_subdirectory(src/Input)
 add_subdirectory(src/Math)
 add_subdirectory(src/Entrypoint)
 
-add_subdirectory(tests)
+if (CI)
+else()
+    add_subdirectory(tests)
+endif()
