@@ -171,12 +171,6 @@ void GraphicsComponent::on_register() {
     glDeleteShader(fragmentShader);
 
     // -------------------------------------------------------
-    // НАСТРОЙКА КОНТЕЙНЕРОВ ДЛЯ VAO и VBO
-    polygon_1.setup_VAO_VBO();
-    polygon_2.setup_VAO_VBO();
-    intersection.setup_VAO_VBO();
-
-    // -------------------------------------------------------
     // ЦВЕТА
     polygon_1.set_color(1.0F, 1.0F, 0.0F, 0.25F);      // желтый
     polygon_2.set_color(0.0F, 1.0F, 1.0F, 0.25F);      // голубой
@@ -204,6 +198,12 @@ void GraphicsComponent::on_render() {
     polygon_1.scaling_of_vertices(max_value, min_value);
     polygon_2.scaling_of_vertices(max_value, min_value);
     intersection.scaling_of_vertices(max_value, min_value);
+
+    // -------------------------------------------------------
+    // НАСТРОЙКА КОНТЕЙНЕРОВ ДЛЯ VAO и VBO
+    polygon_1.setup_VAO_VBO();
+    polygon_2.setup_VAO_VBO();
+    intersection.setup_VAO_VBO();
 
     // -------------------------------------------------------
 
