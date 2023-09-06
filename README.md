@@ -1,5 +1,30 @@
-# Intersection of 2 triangles
-Hse project
+# Intersection of polygons
+HSE project
+
+2nd course, 4th module
+
+Subject: Web Technologies and Databases
+
+### Task
+The program should take the points of two polygons as input and find their intersection
+
+### What we used
+* Programming language: С++
+* Build using cmake
+* Libraries for graphics: GLFW, ImGui, OpenGl
+* Unit-tests using gtest
+
+### Results
+* User-friendly graphical input
+* Quick count of intersection points
+* Visualization of the polygons, their intersections and a text window with details about the intersection
+* Events are taken into account: there is no intersection, the polygon is not a polygon (the entered points are the same or form a line)
+* Tests have been written for the possible number of points from 0 to 6 for triangles, as well as 28 tests for polygons
+* Works in real-time, you don't need to restart the program to change the coordinates of polygons
+
+### Example of work
+![JAEQHQHjDx8](https://github.com/Crew-M2D/intersection-of-2-triangles/assets/87859313/913b4b0e-da27-4301-8fe4-569f4624ca51)
+
 
 ### How to setup and run
 1. Install cmake
